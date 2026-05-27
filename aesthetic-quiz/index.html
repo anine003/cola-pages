@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>你的审美基因里，住着哪个女明星？</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f0eb;color:#292524;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.fade-in{animation:fi .5s ease}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.wrap{width:100%;max-width:440px;margin:0 auto;padding:0 16px}
+.btn{cursor:pointer;border:none;transition:all .2s}.btn:active{transform:scale(.96)}
+.code-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+.code-page .icon{font-size:48px;margin-bottom:20px}
+.code-page h1{font-size:24px;font-weight:700;margin-bottom:8px}
+.code-page .sub{font-size:14px;color:#78716c;margin-bottom:28px}
+.code-page input{width:100%;max-width:300px;padding:14px 16px;border:2px solid #e7e5e4;border-radius:12px;font-size:20px;text-align:center;letter-spacing:6px;font-family:monospace;background:#fff;outline:none;transition:border-color .2s}
+.code-page input:focus{border-color:#8B4513}
+.code-page .error{color:#CC2222;font-size:12px;margin-top:8px;min-height:18px}
+.code-page .submit-btn{background:#292524;color:#fff;padding:14px 48px;border-radius:999px;font-size:16px;letter-spacing:2px;margin-top:12px}
+.code-page .submit-btn:hover{background:#44403c}
+.code-page .submit-btn:disabled{background:#d6d3d1;cursor:not-allowed}
+.quiz-page{min-height:100vh;padding:32px 16px;display:flex;flex-direction:column}
+.quiz-page .top-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#a8a29e;margin-bottom:8px}
+.quiz-page .bar-track{width:100%;height:4px;background:#e7e5e4;border-radius:99px;overflow:hidden;margin-bottom:28px}
+.quiz-page .bar-fill{height:100%;background:#292524;border-radius:99px;transition:width .35s ease}
+.quiz-page h2{font-size:20px;font-weight:600;line-height:1.5;margin-bottom:20px}
+.quiz-page .opts{flex:1;display:flex;flex-direction:column;gap:10px}
+.opt{background:#fff;border:2px solid #e7e5e4;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;gap:12px}
+.opt:hover{transform:scale(1.01);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.opt.sel{border-color:#8B4513;background:#fdf6f0;box-shadow:0 4px 20px rgba(139,69,19,.1)}
+.opt .dot{width:28px;height:28px;border-radius:50%;background:#f5f5f4;color:#a8a29e;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.opt.sel .dot{background:#292524;color:#fff}
+.opt .txt{font-size:14px;color:#44403c;line-height:1.4}
+.quiz-page .btns{display:flex;gap:12px;margin-top:28px}
+.quiz-page .btns button{flex:1;padding:12px;border-radius:999px;font-size:15px;border:1px solid #d6d3d1;background:#fff;color:#57534e;cursor:pointer}
+.quiz-page .btns button:hover{background:#f5f5f4}
+.quiz-page .btns button.primary{background:#292524;color:#fff;border:none}
+.quiz-page .btns button.primary:hover{background:#44403c}
+.quiz-page .btns button:disabled{background:#e7e5e4;color:#a8a29e;cursor:not-allowed;border:none}
+.result-page{min-height:100vh;padding:32px 16px 48px;display:flex;flex-direction:column;align-items:center}
+.r-label{font-size:11px;letter-spacing:5px;color:#a8a29e;margin-bottom:12px;text-align:center}
+.r-emoji{font-size:64px;margin-bottom:4px;text-align:center}
+.r-name{font-size:28px;font-weight:700;text-align:center}
+.r-sub{font-size:13px;color:#78716c;margin-bottom:16px;text-align:center}
+.section{width:100%;background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.section h3{font-size:14px;font-weight:600;margin-bottom:12px;color:#292524;display:flex;align-items:center;gap:8px}
+.section h3 .s-icon{font-size:18px}
+.score-circle{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.score-inner{text-align:center}.score-num{font-size:32px;font-weight:700;color:#fff;line-height:1}
+.score-label{font-size:10px;color:rgba(255,255,255,.7);margin-top:2px}
+.score-row{display:flex;align-items:center;gap:14px}
+.score-text{font-size:13px;color:#57534e;line-height:1.5;flex:1}
+.advice-block{margin-bottom:10px}.advice-block .a-title{font-size:13px;font-weight:600;color:#8B4513;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.advice-block .a-body{font-size:13px;color:#44403c;line-height:1.6}
+.advice-sep{height:1px;background:#f5f5f4;margin:10px 0}
+.tags-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:8px 0 24px}
+.tags-row span{padding:5px 12px;background:#f5f5f4;border-radius:999px;font-size:11px;color:#78716c}
+.restart-btn{background:#292524;color:#fff;padding:10px 36px;border-radius:999px;font-size:14px;letter-spacing:2px;border:none;cursor:pointer;margin-bottom:24px}
+.restart-btn:hover{background:#44403c}
+.hidden{display:none!important}
+/* admin */
+.admin-link{position:fixed;bottom:12px;right:16px;font-size:10px;color:#d6d3d1;cursor:pointer;text-decoration:none;background:none;border:none}
+.admin-panel{max-width:440px;margin:0 auto;padding:32px 16px;min-height:100vh}
+.admin-panel h2{font-size:20px;margin-bottom:20px}
+.admin-panel .stat{font-size:32px;font-weight:700;margin-bottom:4px}
+.admin-panel .stat-label{font-size:12px;color:#78716c;margin-bottom:16px}
+.admin-panel .code-list{font-size:12px;font-family:monospace;line-height:2;max-height:400px;overflow-y:auto;background:#fff;border-radius:8px;padding:12px}
+.admin-panel .code-list .used{color:#a8a29e;text-decoration:line-through}
+.admin-panel .code-list .unused{color:#292524}
+</style>
+</head>
+<body>
+
+<!-- CODE ENTRY -->
+<div id="codePage" class="code-page fade-in wrap">
+<div class="icon">🔐</div>
+<h1>你的审美基因里，住着哪个女明星？</h1>
+<p class="sub">请输入你的专属验证码</p>
+<input type="text" id="codeInput" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" oninput="formatCode()">
+<p class="error" id="codeError"></p>
+<button class="btn submit-btn" id="submitCode" onclick="validateCode()">进入测试</button>
+<p style="font-size:11px;color:#d6d3d1;margin-top:20px">验证码购买后 30 分钟内有效 · 单设备绑定 · 一码一用</p>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="quiz-page fade-in wrap hidden">
+<div class="top-row"><span id="qNum"></span><span id="qPct"></span></div>
+<div class="bar-track"><div id="bar" class="bar-fill" style="width:5%"></div></div>
+<h2 id="qTitle"></h2>
+<div class="opts" id="qOptions"></div>
+<div class="btns">
+<button id="prevBtn" onclick="prev()">上一题</button>
+<button id="nextBtn" onclick="next()" disabled>下一题</button>
+</div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="result-page fade-in wrap hidden"></div>
+
+<!-- ADMIN -->
+<button class="admin-link" id="adminLink" onclick="showAdmin()">·</button>
+<div id="adminPanel" class="admin-panel wrap hidden">
+<h2>验证码管理</h2>
+<div class="stat" id="adminUnused">-</div>
+<div class="stat-label">剩余可用验证码</div>
+<div class="code-list" id="adminCodeList"></div>
+<button class="btn restart-btn" onclick="hideAdmin()" style="margin-top:20px">返回</button>
+</div>
+
+<script>
+// ── CODE SYSTEM ──
+var CODE_HASHES=["26645ad389fc9a38","78b8305f96fc5097","b3ea1fa178d15b24","9e27be67c27dba2d","8f36afd06abb85df","75570a4313239f6a","2ed9b89a904e192b","c0438c0d5d69a534","fd6e4d19d1558ae9","7a29458345c6b10c","af7cb1e93309eddb","524db26d64a64088","501913ab3d880cee","50067cde7fff5800","325543474c1217c1","b792c205c7b23d23","e988b0aa1a64c23b","9cab5d729f641eb1","fe238e7b543bdc9e","22d0925aa0ceccbc","b6b8feee401a52a2","071dcf3211d6c75c","a5327c1b29cd0a5d","8ae3967a3fa02b50","032260d73ca88e30","6bff1c85a2f4c9b8","b80637651f3bddde","26a5ce6d68a60a06","902134346d587a33","35e2d7342cdaae56","bcb2f1a3adfb3c90","492f84c578abed6d","4364b7c8a07889b1","226bdf692719d51b","acaf2f499f96b233","c7a9ab51b24bf0fa","0ffcfa887a6efd90","147f01a7f9b862d6","af45b631b50dc042","bf37cf235f3a1eff","569185bc5a9e2f2c","114b342aaec3fa35","e6e9a0d7bcdb231f","a16e79519f81dac8","2496cd2b6078bf8b","50f035b4981bd526","9d10b98392766322","38a8569f51d21746","bc8076f729f8b26d","f8feecd4ff0320d8","d17ccbd35145f5fa","e8fe4b9cf27e0669","59504a115cb259f3","f74ae608cbd51227","3b7d0772a8d65bc6","79eeb634c846df0b","ad87c95ed499d9ac","63ff6d0b429b7c54","ee6ec57eb1879e6b","b1806e3cc941f04a","014a119faddbd0c6","36f5766efdccffb3","94cca22d5defc163","7019d9b3f580086d","fe4c3c0cc9d26077","b1e6bca3368958f4","daa65b5f305bb8eb","c22db42aff9ac4c5","872ccaf249afbbe1","e562db0828b5b397","4bf78adedcfae90e","587f844b8c938f6d","35edd9c62571fdcb","88ba9bda03aaf349","924d5b79d3280e32","70a7974ec7d634ce","b8a327e2524c3d19","12d67bf4881186f1","aec60e3cff4a6b5b","3fe2cceb6115c073","fada89bc1866e318","ab72ee0ca408b08a","d190f965a18229e9","0b77bd6575cbc9a6","d7150fe3b9077988","faca74a823bb5587","90bf3b218ccb9d68","d43429bda76b6a39","7284a03fb553a729","80edd0026ac7231f","88fcce139b9b1167","08afa4e2da38cc68","bc100550ad4b5053","0e3697ca096319c1","2378ce03d7d6153a","83bae8c081278ab0","79c325a047930556","efd7528eb6ab0346","1b618551202047e6","322feae3ef57a86d"];
+var CODE_LIST=['CWBU-QQH6','MANT-XZW3','SC2G-3YTB','AHTA-RKMU','EPAY-ENMR','WBYU-7H7Y','ATRJ-KELY','2RES-CYB8','QSGW-N3FY','EJ9D-3UQQ','VVWU-KRFN','4L7Q-98TK','UKWE-EKBN','8YY6-6WMF','Y95D-3JA5','ZPT9-CCJH','YW6L-BF33','GJL2-TAMN','H8UA-GCHM','6SMQ-ALWU','B3TY-VVGN','QZG5-V2QQ','3SCJ-7BXC','N4CX-E7VP','4W9C-KRG7','5RR3-DYK6','RMPQ-22QH','WR3U-DHVQ','2KH3-C34W','G4X8-R5LA','Y74U-XKQB','EP7R-QXHZ','JTDA-9DG5','8WBA-WNAK','J2BM-V4FZ','VHQ4-EJ4P','DQM2-45EG','GAUM-9KQX','BYDY-DTFC','TRUF-MPBZ','QWE7-SDAQ','FJWJ-F3HP','7N8Y-LWNN','MTKM-9FUL','SLLL-FLBH','5UEQ-X95B','9BL5-BY8P','NJXD-P2CU','5RTE-M7AH','LCH7-3USC','R4YA-ZH3S','WNX5-LME4','NQSP-CZK2','BVWC-3XD5','Z4PM-ZAYE','2PHZ-3GZ6','A7VA-TX3R','YXCZ-THBW','KC4U-QKHX','JYGB-SXQC','Y86K-8EMY','BX3H-R3U4','EGSB-VMLN','9YS9-DF3T','EDNX-DKBQ','2C9S-HGVN','2F3P-9PU2','P58G-DWB2','A8W8-4TW7','EMPT-EDFP','QYDE-U4TD','NX7U-6W5R','QUZ5-7DFT','CBCR-SJ82','R28T-KCKQ','GZ9J-DLHE','4DMN-QQKK','V5DQ-T9PR','EK86-6UXX','W96K-RQKY','T5M8-N5H2','9MEE-F22F','N2RZ-7QN6','ANR6-TFBR','PHQZ-4SF4','HJR2-4L6B','YEUR-3RVY','7EGM-6SFX','J9AD-F9R5','R6ZC-QYRT','KFW3-WE2D','99YY-NYHT','JQUZ-2NEJ','5R3P-BUTP','H4GX-JWRX','XEVG-NCAR','T8HZ-V6U3','FM8T-KB8C','6N8M-JEGH','ZKK5-SRM2','ZAJU-RT9R'];
+
+async function shorthash(str){
+var e=new TextEncoder().encode(str);
+var h=await crypto.subtle.digest('SHA-256',e);
+return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0')}).join('').slice(0,16);
+}
+
+function getDeviceId(){
+var k='_aes_did',id=localStorage.getItem(k);
+if(!id){id='dev-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem(k,id)}
+return id;
+}
+
+function formatCode(){
+var inp=document.getElementById('codeInput'),v=inp.value.replace(/[^A-Z0-9]/g,'').toUpperCase();
+if(v.length>4)v=v.slice(0,4)+'-'+v.slice(4,8);
+inp.value=v;
+}
+
+var VALIDATED=false,VALIDATED_HASH='';
+
+async function validateCode(){
+var raw=document.getElementById('codeInput').value.trim();
+if(raw.length<9){document.getElementById('codeError').textContent='请输入完整验证码';return}
+var code=raw.replace('-','');
+var hash=await shorthash(code);
+var idx=CODE_HASHES.indexOf(hash);
+if(idx<0){document.getElementById('codeError').textContent='验证码无效';return}
+
+var did=getDeviceId();
+var usedKey='_aes_u_'+hash;
+var used=localStorage.getItem(usedKey);
+var now=Date.now();
+if(used){
+try{var d=JSON.parse(used);}catch(e){d={};}
+if(d.device&&d.device!==did){document.getElementById('codeError').textContent='此验证码已绑定其他设备';return}
+if(now-d.time>30*60*1000){document.getElementById('codeError').textContent='验证码已过期（30分钟有效）';return}
+}else{localStorage.setItem(usedKey,JSON.stringify({device:did,time:now}));}
+
+VALIDATED=true;VALIDATED_HASH=hash;
+startQuiz();
+}
+
+function $(id){return document.getElementById(id)}
+
+// ── QUIZ ──
+var Q=[
+{q:"你第一眼被一个人的什么吸引？",o:[{t:"五官的立体度和线条",v:{s:2,c:1,face:2}},{t:"整体的气质和氛围感",v:{l:2,w:1,sty:2}},{t:"眼神和微表情",v:{w:2,l:1,face:1}},{t:"身材比例和体态",v:{s:1,h:1,sty:1}}]},
+{q:"你最喜欢的穿搭风格是？",o:[{t:"简约高级，黑白灰米色系",v:{h:2,c:1,col:1,sty:2}},{t:"温柔知性，针织长裙平底鞋",v:{w:2,l:1,tex:2,sty:1}},{t:"飒爽利落，皮衣阔腿裤",v:{s:2,c:1,tex:1,sty:2}},{t:"慵懒随性，oversized+素颜",v:{l:2,w:1,sty:1}}]},
+{q:"你更喜欢哪种妆容？",o:[{t:"伪素颜裸妆，看起来没化妆",v:{l:2,w:1,skin:1}},{t:"红唇浓眉，存在感很强",v:{s:2,h:1,col:1}},{t:"干净清透，只突出一处重点",v:{h:2,c:1,face:1}},{t:"温柔腮红，像刚运动完",v:{w:2,l:1,skin:2}}]},
+{q:"最有吸引力的拍摄场景？",o:[{t:"阴雨天的咖啡馆窗边",v:{c:2,w:1,col:1}},{t:"阳光从树叶缝隙漏下来",v:{l:2,w:1,col:2}},{t:"空旷建筑里穿正装回头",v:{s:2,h:1,sty:1}},{t:"海边傍晚逆光，看不清脸",v:{h:2,c:1,skin:1}}]},
+{q:"最喜欢的发型？",o:[{t:"黑长直，发质好到反光",v:{l:2,c:1,face:1}},{t:"大波浪卷发，慵懒蓬松",v:{w:2,s:1,sty:1}},{t:"利落的短发或中短发",v:{h:2,c:1,face:2}},{t:"盘发/丸子头，露出脖子",v:{s:2,h:1,sty:1}}]},
+{q:"哪种类型的人让你多看两眼？",o:[{t:"冷白皮，话不多，有距离感",v:{c:2,h:1,skin:2}},{t:"笑起来好看，很有亲和力",v:{w:2,l:1,face:1}},{t:"五官深邃，像混血",v:{s:2,c:1,face:2}},{t:"干干净净，没有攻击性",v:{l:2,w:1,skin:1}}]},
+{q:"你最不能接受的外表特质？",o:[{t:"油腻、用力过猛",v:{h:2,l:1,sty:1}},{t:"土气、没质感",v:{h:2,c:1,tex:2}},{t:"邋遢、没有精气神",v:{s:2,w:1,face:1}},{t:"俗气、跟风没自己风格",v:{c:2,l:1,sty:2}}]},
+{q:"只留一个关注列表，你留哪种博主？",o:[{t:"穿搭和审美分析博主",v:{h:2,c:1,sty:2}},{t:"生活方式和居家美学博主",v:{w:2,l:1,col:1}},{t:"健身和运动博主",v:{s:2,w:1,skin:1}},{t:"书影音和文艺创作者",v:{l:2,c:1,face:1}}]},
+{q:"选一个你最喜欢的颜色组合",o:[{t:"黑白灰+一个跳色点缀",v:{h:2,c:1,col:2}},{t:"大地色系，米棕驼卡其",v:{w:2,l:1,col:1}},{t:"高饱和撞色，红蓝/紫绿",v:{s:2,h:1,col:2}},{t:"莫兰迪灰调，低饱和柔和",v:{l:2,c:1,col:1}}]},
+{q:"哪种衣服面料最让你想伸手摸？",o:[{t:"真丝/缎面，冰凉滑手",v:{h:2,c:1,tex:2}},{t:"羊绒/羊毛，软糯温暖",v:{w:2,l:1,tex:1}},{t:"厚实的牛仔/帆布，挺括有型",v:{s:2,c:1,tex:1}},{t:"亚麻/棉麻，透气自然肌理",v:{l:2,w:1,tex:2}}]},
+{q:"逛街时哪类单品最容易让你停下来？",o:[{t:"剪裁利落的西装外套",v:{h:2,c:1,sty:2}},{t:"一条质感很好的连衣裙",v:{w:2,l:1,sty:1,tex:1}},{t:"设计感强的皮衣或靴子",v:{s:2,h:1,sty:2}},{t:"穿起来很舒服的阔腿裤",v:{l:2,w:1,sty:1}}]},
+{q:"你更在意一个人的哪个面部特征？",o:[{t:"眼睛的形状和神采",v:{w:2,l:1,face:2}},{t:"下颌线和轮廓的清晰度",v:{s:2,c:1,face:2}},{t:"皮肤质感和气色",v:{l:2,w:1,face:1,skin:1}},{t:"嘴巴和微笑时的弧度",v:{c:2,s:1,face:1}}]},
+{q:"理想中的肤色是什么样的？",o:[{t:"冷白皮，带一点透明的粉",v:{c:2,h:1,skin:2}},{t:"暖调的蜜桃色，健康光泽",v:{w:2,l:1,skin:2}},{t:"小麦色，带运动后的光泽",v:{s:2,w:1,skin:2}},{t:"自然就好，不需要刻意追求",v:{l:2,c:1,skin:1}}]},
+{q:"周末出门最常穿什么？",o:[{t:"一件有质感的基础款+精致配饰",v:{h:2,c:1,tex:1,sty:1,col:1}},{t:"舒服的针织+棉麻长裤+帆布包",v:{w:2,l:1,tex:2,sty:1}},{t:"卫衣+工装裤+球鞋",v:{s:2,w:1,sty:1}},{t:"随心情，衣柜里抓到什么穿什么",v:{l:2,c:1}}]},
+{q:"看到一幅画，最先注意到什么？",o:[{t:"颜色的搭配和冲击力",v:{s:2,h:1,col:2}},{t:"画面的氛围和情绪",v:{l:2,w:1,col:1}},{t:"构图和线条的节奏感",v:{h:2,c:1,sty:1,face:1}},{t:"细节里的肌理和笔触",v:{c:2,l:1,tex:2}}]},
+{q:"哪种天气让你最有穿衣灵感？",o:[{t:"微凉的秋风，最适合叠穿",v:{h:2,c:1,tex:1,sty:2}},{t:"春雨蒙蒙，穿风衣的季节",v:{w:2,l:1,sty:1,col:1}},{t:"夏夜微风，露肤的季节",v:{s:2,w:1,skin:1}},{t:"冬日的阳光，围巾大衣包裹感",v:{l:2,c:1,tex:2}}]},
+{q:"买衣服时的第一考量因素？",o:[{t:"版型和剪裁，穿上好不好看",v:{h:2,s:1,sty:2}},{t:"面料和质感，摸上去舒不舒服",v:{w:2,l:1,tex:2}},{t:"设计感和独特性，会不会撞款",v:{c:2,h:1,sty:1}},{t:"舒适度和实穿性，能不能反复穿",v:{l:2,w:1,tex:1}}]},
+{q:"你觉得一个人最有气质的关键要素是？",o:[{t:"站姿和体态，挺拔不塌",v:{h:2,s:1,face:1}},{t:"说话和表情的节奏",v:{w:2,l:1,face:1}},{t:"眼神里的内容，有没有故事",v:{c:2,l:1,face:2}},{t:"穿衣服有没有自己的风格",v:{s:2,h:1,sty:2}}]},
+{q:"哪种配饰最能代表你的风格？",o:[{t:"一条精致的项链或耳钉",v:{h:2,c:1,col:1}},{t:"一只好质感的皮质手表",v:{w:2,s:1,tex:1}},{t:"什么都不要，越少越好",v:{l:2,c:1,sty:1}},{t:"一条有设计感的丝巾或腰带",v:{s:2,h:1,col:2,sty:1}}]},
+{q:"如果有人夸你好看，你希望是因为？",o:[{t:"气质好，整个人有氛围感",v:{l:2,c:1,sty:2,face:1}},{t:"五官精致，长相耐看",v:{s:2,h:1,face:2}},{t:"皮肤好，看起来很健康",v:{w:2,l:1,skin:2}},{t:"穿衣服有自己的调调，不跟风",v:{h:2,c:1,sty:2}}]},
+{q:"最能代表你的香味？",o:[{t:"木质调，雪松檀香，清冷高级",v:{c:2,h:1,tex:1,col:1}},{t:"柑橘或草本，清新利落",v:{l:2,c:1,sty:1}},{t:"花香或果香，甜而不腻",v:{w:2,l:1,col:1}},{t:"皮革烟草调，温暖厚实",v:{s:2,w:1,tex:1}}]}
+];
+var R={"s+c":{n:"舒淇",e:"🌹",u:"浓颜冷艳 · 天生电影脸",d:"你的审美有强烈的辨识度。你喜欢有攻击性的美——不是凶，是看过一眼就忘不掉的那种。你对骨骼感有本能的敏感，不追求甜腻的精致，反而被「不完美」打动。",g:["浓颜","冷艳","骨相","大气","鲶鱼系"]},"s+h":{n:"倪妮",e:"👑",u:"浓颜高级 · 飒爽大女主",d:"你喜欢的是「贵气」——不是钱的贵，是气质的贵。你看人的时候不找甜度，找的是松弛感。你的核心词是「驾驭」不是「修饰」。",g:["浓颜","高级感","松弛","飒爽","天鹅系"]},"s+w":{n:"迪丽热巴",e:"✨",u:"浓颜甜美 · 异域明艳",d:"你的审美不藏着掖着。你喜欢的就是那种在一群人里一眼扫过去的明艳。立体、高光、笑起来甜——你不排斥「明艳」这个词，你觉得美就该被看见。",g:["浓颜","甜美","异域","明艳","浓眉大眼"]},"l+c":{n:"周迅",e:"🦋",u:"淡颜冷感 · 灵气逼人",d:"你的审美非常挑。不喜欢太满的东西——五官不能太挤、妆容不能太厚、表情不能太多。你喜欢的是一种「轻」——以为她没用力，回头看已经把你拿住了。",g:["淡颜","灵气","疏离","少女感","迅系"]},"l+w":{n:"刘亦菲",e:"🌸",u:"淡颜清冷 · 仙气温润",d:"你的审美底子是古典的。不追求第一眼冲击力，你追求越看越舒服。皮肤质感比五官形状重要，整体和谐比单个部位精致重要——你喜欢「留白感」。",g:["淡颜","仙气","温润","留白","天仙系"]},"l+h":{n:"汤唯",e:"📖",u:"淡颜知性 · 书卷气浓",d:"你在意的是「故事感」。同样一张脸只漂亮但没东西可说——你觉得无聊。你喜欢的气质需要沉淀打底：读过书、走过路、经历过什么。",g:["淡颜","知性","书卷气","耐看","文艺系"]},"c+h":{n:"刘雯",e:"🔥",u:"超模高级脸 · 东方骨相",d:"你的审美超越「好看」这个维度。你追求辨识度、风格感和笃定。单眼皮、高颧骨、方下颌——你深知美不等于漂亮，比大多数人清醒得早。",g:["超模脸","高级感","辨识度","东方骨相","大表姐系"]},"w+s":{n:"钟楚曦",e:"🌟",u:"明艳大气 · 健康力量感",d:"你喜欢的是一种「生命力」——不是温室的花，是太阳底下晒出来的美。小麦色皮肤、紧实线条、笑起来一整排牙齿。你的审美核心词是真实。",g:["明艳","力量感","健康美","小麦肌","野生系"]}};
+var I=0,SS={s:0,l:0,c:0,w:0,h:0,col:0,tex:0,sty:0,face:0,skin:0},A=(new Array(Q.length)).fill(-1);
+
+function startQuiz(){$('codePage').classList.add('hidden');$('result').classList.add('hidden');$('quiz').classList.remove('hidden');I=0;SS={s:0,l:0,c:0,w:0,h:0,col:0,tex:0,sty:0,face:0,skin:0};A=(new Array(Q.length)).fill(-1);renderQ();window.scrollTo(0,0);}
+function renderQ(){var q=Q[I];$('qNum').textContent='第'+(I+1)+'/'+Q.length+' 题';var pct=Math.round((I+1)/Q.length*100);$('qPct').textContent=pct+'%';$('bar').style.width=pct+'%';$('qTitle').textContent=q.q;var h='';for(var i=0;i<q.o.length;i++){var o=q.o[i],sel=A[I]===i?' sel':'';h+='<div class="opt'+sel+'" onclick="pick('+i+')"><span class="dot">'+'ABCD'[i]+'</span><span class="txt">'+o.t+'</span></div>';}$('qOptions').innerHTML=h;$('prevBtn').style.visibility=I===0?'hidden':'visible';var nb=$('nextBtn');nb.textContent=I===Q.length-1?'查看结果':'下一题';if(A[I]>=0){nb.className='primary';nb.disabled=false;}else{nb.className='';nb.disabled=true;}}
+function pick(i){A[I]=i;renderQ();}
+function next(){if(A[I]<0)return;if(I===Q.length-1){calc();return;}I++;renderQ();window.scrollTo(0,0);}
+function prev(){if(I===0)return;I--;renderQ();window.scrollTo(0,0);}
+function calc(){SS={s:0,l:0,c:0,w:0,h:0,col:0,tex:0,sty:0,face:0,skin:0};for(var i=0;i<A.length;i++){if(A[i]<0)continue;var v=Q[i].o[A[i]].v;for(var k in v)SS[k]=(SS[k]||0)+v[k];}var dims=[{k:'s',v:SS.s},{k:'l',v:SS.l},{k:'c',v:SS.c},{k:'w',v:SS.w},{k:'h',v:SS.h}];dims.sort(function(a,b){return b.v-a.v});var rk=null;for(var i=0;i<dims.length&&!rk;i++){for(var j=i+1;j<dims.length&&!rk;j++){var key=dims[i].k+'+'+dims[j].k;if(R[key])rk=key;}}if(!rk)rk='l+w';var r=R[rk];var allVals=[SS.s,SS.l,SS.c,SS.w,SS.h,SS.col,SS.tex,SS.sty,SS.face,SS.skin];var total=0;for(var i=0;i<allVals.length;i++)total+=allVals[i];var avg=total/allVals.length;var peak=Math.max.apply(null,allVals);var score=Math.round(72+(peak/30)*20+(avg/15)*8);score=Math.min(score,97);
+var h='';h+='<p class="r-label">YOUR AESTHETIC MATCH</p>';h+='<div class="r-emoji">'+r.e+'</div><h1 class="r-name">'+r.n+'</h1><p class="r-sub">'+r.u+'</p>';
+var sc=score>=85?'#292524':score>=78?'#44403C':'#57534E';h+='<div class="section"><h3><span class="s-icon">✨</span>审美评分</h3><div class="score-row">';h+='<div class="score-circle" style="background:'+sc+'"><div class="score-inner"><div class="score-num">'+score+'</div><div class="score-label">分</div></div></div>';
+var sd=score>=90?'你的审美方向非常清晰且有辨识度。':score>=82?'你的审美已经形成了自己的语言体系。':score>=75?'你的审美有明确的方向感，风格一致且自成体系。':'你的审美偏好很有特点。';h+='<div class="score-text">'+sd+'</div></div></div>';
+h+='<div class="section"><h3><span class="s-icon">📝</span>审美解读</h3><p style="font-size:13px;color:#44403c;line-height:1.7">'+r.d+'</p></div>';
+var icons={col:'🎨',tex:'🧵',sty:'👗',face:'😊',skin:'✨'};var titles={col:'色彩建议',tex:'质感与面料建议',sty:'穿搭风格建议',face:'长相特色评价',skin:'肤色与妆容建议'};var order=['col','sty','tex','face','skin'];h+='<div class="section"><h3><span class="s-icon">💡</span>个性化美学建议</h3>';
+for(var di=0;di<order.length;di++){var key=order[di];var advs={col:['大胆尝试撞色搭配，高饱和色+中性色是你的主场。','用中性色打底加一件有颜色的单品就是你的最佳公式。','黑白灰是你的舒适区——偶尔一抹酒红或墨绿会惊艳。'],tex:['你在意衣服的触感胜过款式——这是高级的审美直觉。','你的质感审美走实用路线——舒服但不随便。','试着在T恤和衬衫上多花一点预算，质感差距很明显。'],sty:['你的穿搭有强烈的个人风格，不需要跟着潮流走。','你的风格在经典和潮流之间找到了平衡。','你穿衣服的核心是舒服——但舒服不等于没风格。'],face:['你的长相有很强的辨识度，淡妆比浓妆更能突出优点。','你的五官属于耐看型，越看越舒服。','你让人看了觉得很舒服，不用追求网红滤镜里的标准化五官。'],skin:['你对肤色有很清晰的审美——知道自己适合冷调还是暖调。','你对肤色这件事比较放松，自然就好。','选最接近自己脖子颜色的底妆色号，比白了半个色号自然得多。']};var pool=advs[key]||['保持自己的风格就是最好的风格。'];var idx=Math.abs((SS[key]||0)*7+key.length*3)%pool.length;h+='<div class="advice-block"><div class="a-title">'+icons[key]+' '+titles[key]+'</div><div class="a-body">'+pool[idx]+'</div></div>';if(di<order.length-1)h+='<div class="advice-sep"></div>';}
+h+='</div>';h+='<div class="tags-row">';for(var gi=0;gi<r.g.length;gi++)h+='<span>#'+r.g[gi]+'</span>';h+='</div>';h+='<button class="btn restart-btn" onclick="restart()">再测一次</button>';$('result').innerHTML=h;$('quiz').classList.add('hidden');$('result').classList.remove('hidden');window.scrollTo(0,0);}
+function restart(){if(VALIDATED){$('result').classList.add('hidden');startQuiz();}}
+// ── Admin ──
+function showAdmin(){
+var hd=document.getElementById('codePage');var qz=document.getElementById('quiz');var rs=document.getElementById('result');
+if(!hd.classList.contains('hidden'))hd.classList.add('hidden');else if(!qz.classList.contains('hidden'))qz.classList.add('hidden');else if(!rs.classList.contains('hidden'))rs.classList.add('hidden');
+document.getElementById('adminPanel').classList.remove('hidden');
+var unused=0,html='';
+for(var i=0;i<CODE_LIST.length;i++){
+var code=CODE_LIST[i],hash=CODE_HASHES[i];
+var usedEntry=localStorage.getItem('_aes_u_'+hash);
+if(usedEntry){html+='<span class="used">'+code+'</span> ';}else{html+='<span class="unused">'+code+'</span> ';unused++;}
+}
+document.getElementById('adminUnused').textContent=unused;
+document.getElementById('adminCodeList').innerHTML=html||'加载中...';
+}
+function hideAdmin(){document.getElementById('adminPanel').classList.add('hidden');document.getElementById('codePage').classList.remove('hidden');}
+// Init
+(function(){var h=localStorage.getItem('_aes_valid');if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}})();
+</script>
+</body>
+</html>
