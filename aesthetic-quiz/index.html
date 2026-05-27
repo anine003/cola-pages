@@ -271,9 +271,7 @@ ctx.fillStyle='#78716c';ctx.font='12px -apple-system,sans-serif';ctx.textAlign='
 ctx.fillStyle='#292524';ctx.font='bold 13px -apple-system,sans-serif';ctx.fillText('你的审美基因里，住着哪个女明星？',W/2,y);
 y+=30;
 c.height=y;
-var overlay=document.getElementById('shareOverlay');
-overlay.classList.remove('hidden');
-document.getElementById('shareImg').src=c.toDataURL('image/png');
+var a=document.createElement('a');a.download='我的审美基因.png';a.href=c.toDataURL('image/png');a.click();
 }
 function wrapText(ctx,text,x,y,maxW,lh){var words=text.split('');var line='';for(var n=0;n<words.length;n++){var tl=line+words[n];if(ctx.measureText(tl).width>maxW&&n>0){ctx.fillText(line,x,y);line=words[n];y+=lh;}else{line=tl}}ctx.fillText(line,x,y)}
 function closeShare(){document.getElementById('shareOverlay').classList.add('hidden')}
