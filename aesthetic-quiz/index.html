@@ -216,7 +216,8 @@ document.getElementById('adminCodeList').innerHTML=html||'加载中...';
 }
 function hideAdmin(){document.getElementById('adminPanel').classList.add('hidden');document.getElementById('codePage').classList.remove('hidden');}
 // ── Share ──
-var QR_DATA='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABYElEQVRIib2WMbLDIAxE5aGg5Ai+SXIx5mOPL2bfxEegdOGx/q5IPClSiqhIhudCaFkJRL5EUdUqkuV4JK1cHe4siwy1VBmj6ly56sBG3WrQSfRKYFh1YjlNY9y0K5N0jvKEkJ0Y9cPP+DqqW1NHZj7Iadnhg/nTG47MItRANn2a2pEh06Yna9vqn6X3Z1l0TSeFwxkhmqb9WdBITSeJ112vNys78ir7aIVJQtPAmWU2kA2brQ7tUw+2whtltz4qTVNnhmqeuqCFLO+izOvNCvomLZUyivCUHj1YxFyDHRB0QsvrzJgw855p+kXMNW9ms7Mo5rOaD6L5wJsdLHDZ9bI/efyKCSyB3RwD9qLo3MOdWWRMHVhkrrwe/JndC1abtvttFXdm91toB8Znh23Dm73fAtar0G/txAqKwsyZOdduj3sz1sZPUPMSf2bvP7KLptN2h/qytw/o59f0/wn7Ev+JHb+0MLGCyAAAAABJRU5ErkJggg==';
+var QR_IMG=null,QR_DATA='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABYElEQVRIib2WMbLDIAxE5aGg5Ai+SXIx5mOPL2bfxEegdOGx/q5IPClSiqhIhudCaFkJRL5EUdUqkuV4JK1cHe4siwy1VBmj6ly56sBG3WrQSfRKYFh1YjlNY9y0K5N0jvKEkJ0Y9cPP+DqqW1NHZj7Iadnhg/nTG47MItRANn2a2pEh06Yna9vqn6X3Z1l0TSeFwxkhmqb9WdBITSeJ112vNys78ir7aIVJQtPAmWU2kA2brQ7tUw+2whtltz4qTVNnhmqeuqCFLO+izOvNCvomLZUyivCUHj1YxFyDHRB0QsvrzJgw855p+kXMNW9ms7Mo5rOaD6L5wJsdLHDZ9bI/efyKCSyB3RwD9qLo3MOdWWRMHVhkrrwe/JndC1abtvttFXdm91toB8Znh23Dm73fAtar0G/txAqKwsyZOdduj3sz1sZPUPMSf2bvP7KLptN2h/qytw/o59f0/wn7Ev+JHb+0MLGCyAAAAABJRU5ErkJggg==';
+(function(){var i=new Image();i.onload=function(){QR_IMG=i};i.src=QR_DATA})();
 function shareResult(){
 var C=document.getElementById('result');
 var name=C.querySelector('.r-name').textContent,emoji=C.querySelector('.r-emoji').textContent;
@@ -244,15 +245,17 @@ ctx.fillStyle='#78716c';ctx.textAlign='center';ctx.fillText(tags[i],tgX+tw/2,tgY
 tgX+=tw+6;
 }
 y=tgY+40;
-ctx.strokeStyle='#e7e5e4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(P,y);ctx.lineTo(W-P,y);ctx.stroke();y+=20;
-var qrImg=new Image();qrImg.onload=function(){
-ctx.drawImage(qrImg,(W-QW)/2,y,QW,QW);
+if(QR_IMG){ctx.drawImage(QR_IMG,(W-QW)/2,y,QW,QW)}
 y+=QW+14;
 ctx.fillStyle='#78716c';ctx.font='12px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText('扫码测测你的审美基因',W/2,y);y+=20;
 ctx.fillStyle='#292524';ctx.font='bold 13px -apple-system,sans-serif';ctx.fillText('你的审美基因里，住着哪个女明星？',W/2,y);y+=28;
 c.height=y;
-var a=document.createElement('a');a.download='我的审美基因.png';a.href=c.toDataURL('image/png');a.click();
-};qrImg.src=QR_DATA;
+c.toBlob(function(blob){
+var u=URL.createObjectURL(blob);
+var a=document.createElement('a');document.body.appendChild(a);
+a.download='我的审美基因.png';a.href=u;a.click();
+document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u)},100);
+},'image/png');
 }
 // Init
 (function(){var h=localStorage.getItem('_aes_valid');if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}})();
