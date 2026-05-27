@@ -68,7 +68,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .admin-panel .code-list{font-size:12px;font-family:monospace;line-height:2;max-height:400px;overflow-y:auto;background:#fff;border-radius:8px;padding:12px}
 .admin-panel .code-list .used{color:#a8a29e;text-decoration:line-through}
 .admin-panel .code-list .unused{color:#292524}
-.share-btn{background:linear-gradient(135deg,#8B4513,#a0522d);color:#fff;padding:12px 40px;border-radius:999px;font-size:15px;letter-spacing:2px;border:none;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(139,69,19,.25)}.share-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,69,19,.35)}.share-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}.share-overlay img{max-width:90vw;max-height:70vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}.share-overlay .sh-tip{color:#fff;font-size:13px;margin-top:16px;opacity:.8;text-align:center}.share-overlay .sh-close{color:#fff;background:none;border:1px solid rgba(255,255,255,.3);padding:8px 24px;border-radius:99px;font-size:13px;cursor:pointer;margin-top:12px}
+.share-btn{background:linear-gradient(135deg,#8B4513,#a0522d);color:#fff;padding:12px 40px;border-radius:999px;font-size:15px;letter-spacing:2px;border:none;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(139,69,19,.25)}.share-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,69,19,.35)}
 </style>
 </head>
 <body>
@@ -109,12 +109,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 <button class="btn restart-btn" onclick="hideAdmin()" style="margin-top:20px">返回</button>
 </div>
 
-<!-- SHARE OVERLAY -->
-<div id="shareOverlay" class="share-overlay hidden" onclick="closeShare()">
-<img id="shareImg" src="" alt="结果截图" onclick="event.stopPropagation()">
-<p class="sh-tip">长按图片保存 · 分享到朋友圈</p>
-<button class="sh-close" onclick="closeShare()">关闭</button>
-</div>
 
 <script>
 // ── CODE SYSTEM ──
@@ -221,60 +215,45 @@ document.getElementById('adminUnused').textContent=unused;
 document.getElementById('adminCodeList').innerHTML=html||'加载中...';
 }
 function hideAdmin(){document.getElementById('adminPanel').classList.add('hidden');document.getElementById('codePage').classList.remove('hidden');}
-// ── Share (zero dependencies) ──
-function makeQR(text,size){var c=document.createElement('canvas');c.width=c.height=size;var ctx=c.getContext('2d');var img=new Image();img.crossOrigin='anonymous';img.onload=function(){ctx.drawImage(img,0,0,size,size)};img.src='https://api.qrserver.com/v1/create-qr-code/?size='+size+'x'+size+'&data='+encodeURIComponent(text);return c}
-function drawRoundRect(ctx,x,y,w,h,r,fill){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();if(fill){ctx.fill()}else{ctx.stroke()}}
-async function shareResult(){
+// ── Share ──
+var QR_DATA='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABYElEQVRIib2WMbLDIAxE5aGg5Ai+SXIx5mOPL2bfxEegdOGx/q5IPClSiqhIhudCaFkJRL5EUdUqkuV4JK1cHe4siwy1VBmj6ly56sBG3WrQSfRKYFh1YjlNY9y0K5N0jvKEkJ0Y9cPP+DqqW1NHZj7Iadnhg/nTG47MItRANn2a2pEh06Yna9vqn6X3Z1l0TSeFwxkhmqb9WdBITSeJ112vNys78ir7aIVJQtPAmWU2kA2brQ7tUw+2whtltz4qTVNnhmqeuqCFLO+izOvNCvomLZUyivCUHj1YxFyDHRB0QsvrzJgw855p+kXMNW9ms7Mo5rOaD6L5wJsdLHDZ9bI/efyKCSyB3RwD9qLo3MOdWWRMHVhkrrwe/JndC1abtvttFXdm91toB8Znh23Dm73fAtar0G/txAqKwsyZOdduj3sz1sZPUPMSf2bvP7KLptN2h/qytw/o59f0/wn7Ev+JHb+0MLGCyAAAAABJRU5ErkJggg==';
+function shareResult(){
 var C=document.getElementById('result');
-var name=C.querySelector('.r-name').textContent;
-var emoji=C.querySelector('.r-emoji').textContent;
-var sub=C.querySelector('.r-sub').textContent;
-var score=C.querySelector('.score-num').textContent;
+var name=C.querySelector('.r-name').textContent,emoji=C.querySelector('.r-emoji').textContent;
+var sub=C.querySelector('.r-sub').textContent,score=C.querySelector('.score-num').textContent;
 var tags=[];C.querySelectorAll('.tags-row span').forEach(function(s){tags.push(s.textContent)});
-var advice=C.querySelectorAll('.section');var aTitle='',aBody='';
-for(var i=0;i<advice.length;i++){var h3=advice[i].querySelector('h3');if(h3&&h3.textContent.indexOf('建议')>0){var ab=advice[i].querySelector('.a-body');if(ab){aTitle=h3.textContent.replace(/^[^\u4e00-\u9fa5]*/,'');aBody=ab.textContent;break}}}
-var W=400,P=24,QW=110;
-var c=document.createElement('canvas');c.width=W;
-var ctx=c.getContext('2d');
-ctx.fillStyle='#f5f0eb';ctx.fillRect(0,0,W,9999);
+var W=400,P=24,QW=120;
+var c=document.createElement('canvas');c.width=W;var ctx=c.getContext('2d');
+ctx.fillStyle='#f5f0eb';ctx.fillRect(0,0,W,1200);
 var y=24;
-ctx.fillStyle='#a8a29e';ctx.font='10px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText('YOUR AESTHETIC MATCH',W/2,y);y+=18;
-ctx.font='52px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText(emoji,W/2,y+10);y+=64;
-ctx.fillStyle='#292524';ctx.font='bold 30px -apple-system,sans-serif';ctx.fillText(name,W/2,y);y+=38;
+ctx.fillStyle='#a8a29e';ctx.font='10px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText('YOUR AESTHETIC MATCH',W/2,y);y+=24;
+ctx.font='52px -apple-system,sans-serif';ctx.fillText(emoji,W/2,y+10);y+=64;
+ctx.fillStyle='#292524';ctx.font='bold 30px -apple-system,sans-serif';ctx.fillText(name,W/2,y);y+=36;
 ctx.fillStyle='#78716c';ctx.font='13px -apple-system,sans-serif';ctx.fillText(sub,W/2,y);y+=28;
 var scI=parseInt(score)||85;var scC=scI>=85?'#292524':scI>=78?'#44403C':'#57534E';
 ctx.fillStyle=scC;ctx.beginPath();ctx.arc(W/2,y+42,42,0,Math.PI*2);ctx.fill();
 ctx.fillStyle='#fff';ctx.font='bold 36px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText(score,W/2,y+48);
 ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='11px -apple-system,sans-serif';ctx.fillText('审美评分',W/2,y+72);y+=108;
-var tx=P,tw=W-P*2,th=0;
-ctx.fillStyle='#fff';drawRoundRect(ctx,tx,y,tw,48,12,true);
-var tgY=y+8;
+var tx=P,tgX=tx+8,tgY=y+8;
+ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(tx+12,y);ctx.lineTo(tx+W-P*2-12,y);ctx.arcTo(tx+W-P*2,y,tx+W-P*2,y+12,12);ctx.arcTo(tx+W-P*2,y+44,tx+W-P*2-12,y+44,12);ctx.lineTo(tx+12,y+44);ctx.arcTo(tx,y+44,tx,y+44-12,12);ctx.arcTo(tx,y+12,tx+12,y,12);ctx.closePath();ctx.fill();
 for(var i=0;i<tags.length;i++){
-ctx.font='11px -apple-system,sans-serif';var tw2=ctx.measureText(tags[i]).width+20;
-if(tgX===undefined||tgX+tw2>tx+tw-P){if(tgX!==undefined){tgY+=24;th+=24}tgX=tx+P}
-ctx.fillStyle='#f5f5f4';drawRoundRect(ctx,tgX,tgY,tw2,24,12,true);
-ctx.fillStyle='#78716c';ctx.textAlign='center';ctx.fillText(tags[i],tgX+tw2/2,tgY+16);
-tgX+=tw2+6;
+ctx.font='11px -apple-system,sans-serif';var tw=ctx.measureText(tags[i]).width+20;
+if(tgX+tw>tx+W-P*2-8){tgX=tx+8;tgY+=26}
+ctx.fillStyle='#f5f5f4';ctx.beginPath();ctx.moveTo(tgX+10,tgY);ctx.lineTo(tgX+tw-10,tgY);ctx.arcTo(tgX+tw,tgY,tgX+tw,tgY+10,10);ctx.arcTo(tgX+tw,tgY+20,tgX+tw-10,tgY+20,10);ctx.lineTo(tgX+10,tgY+20);ctx.arcTo(tgX,tgY+20,tgX,tgY+10,10);ctx.arcTo(tgX,tgY,tgX+10,tgY,10);ctx.closePath();ctx.fill();
+ctx.fillStyle='#78716c';ctx.textAlign='center';ctx.fillText(tags[i],tgX+tw/2,tgY+14);
+tgX+=tw+6;
 }
-y=Math.max(y+60,tgY+32);
-if(aTitle){
-ctx.fillStyle='#fff';ctx.fillRect(P,y,W-P*2,52);y+=8;
-ctx.fillStyle='#8B4513';ctx.font='bold 13px -apple-system,sans-serif';ctx.textAlign='left';ctx.fillText('💡 '+aTitle,P+12,y+10);y+=26;
-ctx.fillStyle='#44403c';ctx.font='12px -apple-system,sans-serif';wrapText(ctx,aBody,P+12,y,W-P*2-24,18);y+=60;
-}
-ctx.strokeStyle='#e7e5e4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(P,y);ctx.lineTo(W-P,y);ctx.stroke();
-y+=20;
-var qc=makeQR('https://anine003.github.io/cola-pages/aesthetic-quiz/',QW);
-ctx.drawImage(qc,(W-QW)/2,y,QW,QW);
-y+=QW+12;
+y=tgY+40;
+ctx.strokeStyle='#e7e5e4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(P,y);ctx.lineTo(W-P,y);ctx.stroke();y+=20;
+var qrImg=new Image();qrImg.onload=function(){
+ctx.drawImage(qrImg,(W-QW)/2,y,QW,QW);
+y+=QW+14;
 ctx.fillStyle='#78716c';ctx.font='12px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText('扫码测测你的审美基因',W/2,y);y+=20;
-ctx.fillStyle='#292524';ctx.font='bold 13px -apple-system,sans-serif';ctx.fillText('你的审美基因里，住着哪个女明星？',W/2,y);
-y+=30;
+ctx.fillStyle='#292524';ctx.font='bold 13px -apple-system,sans-serif';ctx.fillText('你的审美基因里，住着哪个女明星？',W/2,y);y+=28;
 c.height=y;
 var a=document.createElement('a');a.download='我的审美基因.png';a.href=c.toDataURL('image/png');a.click();
+};qrImg.src=QR_DATA;
 }
-function wrapText(ctx,text,x,y,maxW,lh){var words=text.split('');var line='';for(var n=0;n<words.length;n++){var tl=line+words[n];if(ctx.measureText(tl).width>maxW&&n>0){ctx.fillText(line,x,y);line=words[n];y+=lh;}else{line=tl}}ctx.fillText(line,x,y)}
-function closeShare(){document.getElementById('shareOverlay').classList.add('hidden')}
 // Init
 (function(){var h=localStorage.getItem('_aes_valid');if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}})();
 </script>
