@@ -68,7 +68,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .admin-panel .code-list{font-size:12px;font-family:monospace;line-height:2;max-height:400px;overflow-y:auto;background:#fff;border-radius:8px;padding:12px}
 .admin-panel .code-list .used{color:#a8a29e;text-decoration:line-through}
 .admin-panel .code-list .unused{color:#292524}
+.share-btn{background:linear-gradient(135deg,#8B4513,#a0522d);color:#fff;padding:12px 40px;border-radius:999px;font-size:15px;letter-spacing:2px;border:none;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(139,69,19,.25)}.share-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,69,19,.35)}.share-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}.share-overlay img{max-width:90vw;max-height:70vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}.share-overlay .sh-tip{color:#fff;font-size:13px;margin-top:16px;opacity:.8;text-align:center}.share-overlay .sh-close{color:#fff;background:none;border:1px solid rgba(255,255,255,.3);padding:8px 24px;border-radius:99px;font-size:13px;cursor:pointer;margin-top:12px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -106,6 +109,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 <div class="stat-label">剩余可用验证码</div>
 <div class="code-list" id="adminCodeList"></div>
 <button class="btn restart-btn" onclick="hideAdmin()" style="margin-top:20px">返回</button>
+</div>
+
+<!-- SHARE OVERLAY -->
+<div id="shareOverlay" class="share-overlay hidden" onclick="closeShare()">
+<img id="shareImg" src="" alt="结果截图" onclick="event.stopPropagation()">
+<p class="sh-tip">长按图片保存 · 分享到朋友圈</p>
+<button class="sh-close" onclick="closeShare()">关闭</button>
 </div>
 
 <script>
@@ -196,7 +206,7 @@ var sd=score>=90?'你的审美方向非常清晰且有辨识度。':score>=82?'�
 h+='<div class="section"><h3><span class="s-icon">📝</span>审美解读</h3><p style="font-size:13px;color:#44403c;line-height:1.7">'+r.d+'</p></div>';
 var icons={col:'🎨',tex:'🧵',sty:'👗',face:'😊',skin:'✨'};var titles={col:'色彩建议',tex:'质感与面料建议',sty:'穿搭风格建议',face:'长相特色评价',skin:'肤色与妆容建议'};var order=['col','sty','tex','face','skin'];h+='<div class="section"><h3><span class="s-icon">💡</span>个性化美学建议</h3>';
 for(var di=0;di<order.length;di++){var key=order[di];var advs={col:['大胆尝试撞色搭配，高饱和色+中性色是你的主场。','用中性色打底加一件有颜色的单品就是你的最佳公式。','黑白灰是你的舒适区——偶尔一抹酒红或墨绿会惊艳。'],tex:['你在意衣服的触感胜过款式——这是高级的审美直觉。','你的质感审美走实用路线——舒服但不随便。','试着在T恤和衬衫上多花一点预算，质感差距很明显。'],sty:['你的穿搭有强烈的个人风格，不需要跟着潮流走。','你的风格在经典和潮流之间找到了平衡。','你穿衣服的核心是舒服——但舒服不等于没风格。'],face:['你的长相有很强的辨识度，淡妆比浓妆更能突出优点。','你的五官属于耐看型，越看越舒服。','你让人看了觉得很舒服，不用追求网红滤镜里的标准化五官。'],skin:['你对肤色有很清晰的审美——知道自己适合冷调还是暖调。','你对肤色这件事比较放松，自然就好。','选最接近自己脖子颜色的底妆色号，比白了半个色号自然得多。']};var pool=advs[key]||['保持自己的风格就是最好的风格。'];var idx=Math.abs((SS[key]||0)*7+key.length*3)%pool.length;h+='<div class="advice-block"><div class="a-title">'+icons[key]+' '+titles[key]+'</div><div class="a-body">'+pool[idx]+'</div></div>';if(di<order.length-1)h+='<div class="advice-sep"></div>';}
-h+='</div>';h+='<div class="tags-row">';for(var gi=0;gi<r.g.length;gi++)h+='<span>#'+r.g[gi]+'</span>';h+='</div>';h+='<button class="btn restart-btn" onclick="restart()">再测一次</button>';$('result').innerHTML=h;$('quiz').classList.add('hidden');$('result').classList.remove('hidden');window.scrollTo(0,0);}
+h+='</div>';h+='<div class="tags-row">';for(var gi=0;gi<r.g.length;gi++)h+='<span>#'+r.g[gi]+'</span>';h+='</div>';h+='<button class="btn share-btn" onclick="shareResult()">📸 保存结果截图</button><button class="btn restart-btn" onclick="restart()">再测一次</button>';$('result').innerHTML=h;$('quiz').classList.add('hidden');$('result').classList.remove('hidden');window.scrollTo(0,0);}
 function restart(){if(VALIDATED){$('result').classList.add('hidden');startQuiz();}}
 // ── Admin ──
 function showAdmin(){
@@ -213,6 +223,25 @@ document.getElementById('adminUnused').textContent=unused;
 document.getElementById('adminCodeList').innerHTML=html||'加载中...';
 }
 function hideAdmin(){document.getElementById('adminPanel').classList.add('hidden');document.getElementById('codePage').classList.remove('hidden');}
+// ── Share ──
+function qrCanvas(url,size){return new Promise(function(ok){var c=document.createElement('canvas');QRCode.toCanvas(c,url,{width:size,margin:1},function(){ok(c)})})}
+async function shareResult(){
+var overlay=document.getElementById('shareOverlay');var imgEl=document.getElementById('shareImg');
+overlay.classList.remove('hidden');imgEl.src='';
+var W=440,QR=120,GAP=20,BH=80;
+var c=document.createElement('canvas');c.width=W;var ctx=c.getContext('2d');
+ctx.fillStyle='#f5f0eb';ctx.fillRect(0,0,W,9999);
+var cap=await html2canvas(document.getElementById('result'),{backgroundColor:'#f5f0eb',scale:2,width:W});
+var qr=await qrCanvas('https://anine003.github.io/cola-pages/aesthetic-quiz/',QR);
+c.height=cap.height+QR+GAP+BH;ctx.drawImage(cap,0,0);
+var qx=(W-QR)/2,qy=cap.height+GAP;ctx.drawImage(qr,qx,qy,QR,QR);
+ctx.fillStyle='#78716c';ctx.font='12px -apple-system,sans-serif';ctx.textAlign='center';
+ctx.fillText('扫码测测你的审美基因',W/2,qy+QR+18);
+ctx.fillStyle='#292524';ctx.font='bold 13px -apple-system,sans-serif';
+ctx.fillText('你的审美基因里，住着哪个女明星？',W/2,qy+QR+42);
+imgEl.src=c.toDataURL('image/png');
+}
+function closeShare(){document.getElementById('shareOverlay').classList.add('hidden')}
 // Init
 (function(){var h=localStorage.getItem('_aes_valid');if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}})();
 </script>
