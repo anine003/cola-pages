@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <title>你的审美基因里，住着哪个女明星？</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -192,13 +193,13 @@ function pick(i){A[I]=i;renderQ();}
 function next(){if(A[I]<0)return;if(I===Q.length-1){calc();return;}I++;renderQ();window.scrollTo(0,0);}
 function prev(){if(I===0)return;I--;renderQ();window.scrollTo(0,0);}
 function calc(){SS={s:0,l:0,c:0,w:0,h:0,col:0,tex:0,sty:0,face:0,skin:0};for(var i=0;i<A.length;i++){if(A[i]<0)continue;var v=Q[i].o[A[i]].v;for(var k in v)SS[k]=(SS[k]||0)+v[k];}var dims=[{k:'s',v:SS.s},{k:'l',v:SS.l},{k:'c',v:SS.c},{k:'w',v:SS.w},{k:'h',v:SS.h}];dims.sort(function(a,b){return b.v-a.v});var rk=null;for(var i=0;i<dims.length&&!rk;i++){for(var j=i+1;j<dims.length&&!rk;j++){var key=dims[i].k+'+'+dims[j].k;if(R[key])rk=key;}}if(!rk)rk='l+w';var r=R[rk];var allVals=[SS.s,SS.l,SS.c,SS.w,SS.h,SS.col,SS.tex,SS.sty,SS.face,SS.skin];var total=0;for(var i=0;i<allVals.length;i++)total+=allVals[i];var avg=total/allVals.length;var peak=Math.max.apply(null,allVals);var score=Math.round(72+(peak/30)*20+(avg/15)*8);score=Math.min(score,97);
-var h='';h+='<p class="r-label">YOUR AESTHETIC MATCH</p>';h+='<div class="r-emoji">'+r.e+'</div><h1 class="r-name">'+r.n+'</h1><p class="r-sub">'+r.u+'</p>';
+var h='';h+='<div id="resultContent" style="background:#f5f0eb;padding:24px 16px 32px;border-radius:16px;width:100%">';h+='<p class="r-label">YOUR AESTHETIC MATCH</p>';h+='<div class="r-emoji">'+r.e+'</div><h1 class="r-name">'+r.n+'</h1><p class="r-sub">'+r.u+'</p>';
 var sc=score>=85?'#292524':score>=78?'#44403C':'#57534E';h+='<div class="section"><h3><span class="s-icon">✨</span>审美评分</h3><div class="score-row">';h+='<div class="score-circle" style="background:'+sc+'"><div class="score-inner"><div class="score-num">'+score+'</div><div class="score-label">分</div></div></div>';
 var sd=score>=90?'你的审美方向非常清晰且有辨识度。':score>=82?'你的审美已经形成了自己的语言体系。':score>=75?'你的审美有明确的方向感，风格一致且自成体系。':'你的审美偏好很有特点。';h+='<div class="score-text">'+sd+'</div></div></div>';
 h+='<div class="section"><h3><span class="s-icon">📝</span>审美解读</h3><p style="font-size:13px;color:#44403c;line-height:1.7">'+r.d+'</p></div>';
 var icons={col:'🎨',tex:'🧵',sty:'👗',face:'😊',skin:'✨'};var titles={col:'色彩建议',tex:'质感与面料建议',sty:'穿搭风格建议',face:'长相特色评价',skin:'肤色与妆容建议'};var order=['col','sty','tex','face','skin'];h+='<div class="section"><h3><span class="s-icon">💡</span>个性化美学建议</h3>';
 for(var di=0;di<order.length;di++){var key=order[di];var advs={col:['大胆尝试撞色搭配，高饱和色+中性色是你的主场。','用中性色打底加一件有颜色的单品就是你的最佳公式。','黑白灰是你的舒适区——偶尔一抹酒红或墨绿会惊艳。'],tex:['你在意衣服的触感胜过款式——这是高级的审美直觉。','你的质感审美走实用路线——舒服但不随便。','试着在T恤和衬衫上多花一点预算，质感差距很明显。'],sty:['你的穿搭有强烈的个人风格，不需要跟着潮流走。','你的风格在经典和潮流之间找到了平衡。','你穿衣服的核心是舒服——但舒服不等于没风格。'],face:['你的长相有很强的辨识度，淡妆比浓妆更能突出优点。','你的五官属于耐看型，越看越舒服。','你让人看了觉得很舒服，不用追求网红滤镜里的标准化五官。'],skin:['你对肤色有很清晰的审美——知道自己适合冷调还是暖调。','你对肤色这件事比较放松，自然就好。','选最接近自己脖子颜色的底妆色号，比白了半个色号自然得多。']};var pool=advs[key]||['保持自己的风格就是最好的风格。'];var idx=Math.abs((SS[key]||0)*7+key.length*3)%pool.length;h+='<div class="advice-block"><div class="a-title">'+icons[key]+' '+titles[key]+'</div><div class="a-body">'+pool[idx]+'</div></div>';if(di<order.length-1)h+='<div class="advice-sep"></div>';}
-h+='</div>';h+='<div class="tags-row">';for(var gi=0;gi<r.g.length;gi++)h+='<span>#'+r.g[gi]+'</span>';h+='</div>';h+='<button class="btn share-btn" onclick="shareResult()">📸 保存结果截图</button><button class="btn restart-btn" onclick="restart()">再测一次</button>';$('result').innerHTML=h;$('quiz').classList.add('hidden');$('result').classList.remove('hidden');window.scrollTo(0,0);}
+h+='</div>';h+='<div class="tags-row">';for(var gi=0;gi<r.g.length;gi++)h+='<span>#'+r.g[gi]+'</span>';h+='</div>';h+='</div><button class="btn share-btn" id="shareBtn" onclick="shareResult()">📸 点击保存截图</button><button class="btn restart-btn" onclick="restart()">再测一次</button>';$('result').innerHTML=h;$('quiz').classList.add('hidden');$('result').classList.remove('hidden');window.scrollTo(0,0);}
 function restart(){if(VALIDATED){$('result').classList.add('hidden');startQuiz();}}
 // ── Admin ──
 function showAdmin(){
@@ -215,47 +216,34 @@ document.getElementById('adminUnused').textContent=unused;
 document.getElementById('adminCodeList').innerHTML=html||'加载中...';
 }
 function hideAdmin(){document.getElementById('adminPanel').classList.add('hidden');document.getElementById('codePage').classList.remove('hidden');}
-// ── Share ──
-var QR_IMG=null,QR_DATA='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWAQMAAAAGz+OhAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABYElEQVRIib2WMbLDIAxE5aGg5Ai+SXIx5mOPL2bfxEegdOGx/q5IPClSiqhIhudCaFkJRL5EUdUqkuV4JK1cHe4siwy1VBmj6ly56sBG3WrQSfRKYFh1YjlNY9y0K5N0jvKEkJ0Y9cPP+DqqW1NHZj7Iadnhg/nTG47MItRANn2a2pEh06Yna9vqn6X3Z1l0TSeFwxkhmqb9WdBITSeJ112vNys78ir7aIVJQtPAmWU2kA2brQ7tUw+2whtltz4qTVNnhmqeuqCFLO+izOvNCvomLZUyivCUHj1YxFyDHRB0QsvrzJgw855p+kXMNW9ms7Mo5rOaD6L5wJsdLHDZ9bI/efyKCSyB3RwD9qLo3MOdWWRMHVhkrrwe/JndC1abtvttFXdm91toB8Znh23Dm73fAtar0G/txAqKwsyZOdduj3sz1sZPUPMSf2bvP7KLptN2h/qytw/o59f0/wn7Ev+JHb+0MLGCyAAAAABJRU5ErkJggg==';
-(function(){var i=new Image();i.onload=function(){QR_IMG=i};i.src=QR_DATA})();
+// ── Share (html2canvas) ──
 function shareResult(){
-var C=document.getElementById('result');
-var name=C.querySelector('.r-name').textContent,emoji=C.querySelector('.r-emoji').textContent;
-var sub=C.querySelector('.r-sub').textContent,score=C.querySelector('.score-num').textContent;
-var tags=[];C.querySelectorAll('.tags-row span').forEach(function(s){tags.push(s.textContent)});
-var W=400,P=24,QW=120;
-var c=document.createElement('canvas');c.width=W;var ctx=c.getContext('2d');
-ctx.fillStyle='#f5f0eb';ctx.fillRect(0,0,W,1200);
-var y=24;
-ctx.fillStyle='#a8a29e';ctx.font='10px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText('YOUR AESTHETIC MATCH',W/2,y);y+=24;
-ctx.font='52px -apple-system,sans-serif';ctx.fillText(emoji,W/2,y+10);y+=64;
-ctx.fillStyle='#292524';ctx.font='bold 30px -apple-system,sans-serif';ctx.fillText(name,W/2,y);y+=36;
-ctx.fillStyle='#78716c';ctx.font='13px -apple-system,sans-serif';ctx.fillText(sub,W/2,y);y+=28;
-var scI=parseInt(score)||85;var scC=scI>=85?'#292524':scI>=78?'#44403C':'#57534E';
-ctx.fillStyle=scC;ctx.beginPath();ctx.arc(W/2,y+42,42,0,Math.PI*2);ctx.fill();
-ctx.fillStyle='#fff';ctx.font='bold 36px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText(score,W/2,y+48);
-ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='11px -apple-system,sans-serif';ctx.fillText('审美评分',W/2,y+72);y+=108;
-var tx=P,tgX=tx+8,tgY=y+8;
-ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(tx+12,y);ctx.lineTo(tx+W-P*2-12,y);ctx.arcTo(tx+W-P*2,y,tx+W-P*2,y+12,12);ctx.arcTo(tx+W-P*2,y+44,tx+W-P*2-12,y+44,12);ctx.lineTo(tx+12,y+44);ctx.arcTo(tx,y+44,tx,y+44-12,12);ctx.arcTo(tx,y+12,tx+12,y,12);ctx.closePath();ctx.fill();
-for(var i=0;i<tags.length;i++){
-ctx.font='11px -apple-system,sans-serif';var tw=ctx.measureText(tags[i]).width+20;
-if(tgX+tw>tx+W-P*2-8){tgX=tx+8;tgY+=26}
-ctx.fillStyle='#f5f5f4';ctx.beginPath();ctx.moveTo(tgX+10,tgY);ctx.lineTo(tgX+tw-10,tgY);ctx.arcTo(tgX+tw,tgY,tgX+tw,tgY+10,10);ctx.arcTo(tgX+tw,tgY+20,tgX+tw-10,tgY+20,10);ctx.lineTo(tgX+10,tgY+20);ctx.arcTo(tgX,tgY+20,tgX,tgY+10,10);ctx.arcTo(tgX,tgY,tgX+10,tgY,10);ctx.closePath();ctx.fill();
-ctx.fillStyle='#78716c';ctx.textAlign='center';ctx.fillText(tags[i],tgX+tw/2,tgY+14);
-tgX+=tw+6;
-}
-y=tgY+40;
-if(QR_IMG){ctx.drawImage(QR_IMG,(W-QW)/2,y,QW,QW)}
-y+=QW+14;
-ctx.fillStyle='#78716c';ctx.font='12px -apple-system,sans-serif';ctx.textAlign='center';ctx.fillText('扫码测测你的审美基因',W/2,y);y+=20;
-ctx.fillStyle='#292524';ctx.font='bold 13px -apple-system,sans-serif';ctx.fillText('你的审美基因里，住着哪个女明星？',W/2,y);y+=28;
-c.height=y;
-c.toBlob(function(blob){
-var u=URL.createObjectURL(blob);
-var a=document.createElement('a');document.body.appendChild(a);
-a.download='我的审美基因.png';a.href=u;a.click();
-document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u)},100);
-},'image/png');
+var btn=document.getElementById('shareBtn');
+btn.disabled=true;btn.textContent='正在生成截图...';
+var target=document.getElementById('resultContent');
+html2canvas(target,{
+  backgroundColor:'#f5f0eb',
+  scale:2,
+  useCORS:true,
+  logging:false
+}).then(function(canvas){
+  canvas.toBlob(function(blob){
+    if(!blob){btn.disabled=false;btn.textContent='📸 点击保存截图';alert('生成失败，请重试');return;}
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='我的审美基因.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1000);
+    btn.disabled=false;btn.textContent='📸 点击保存截图';
+  },'image/png');
+}).catch(function(e){
+  console.error(e);
+  btn.disabled=false;btn.textContent='📸 点击保存截图';
+  alert('截图生成失败：'+e.message);
+});
 }
 // Init
 (function(){var h=localStorage.getItem('_aes_valid');if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}})();
