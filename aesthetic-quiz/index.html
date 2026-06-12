@@ -11,6 +11,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .fade-in{animation:fi .5s ease}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .wrap{width:100%;max-width:440px;margin:0 auto;padding:0 16px}
 .btn{cursor:pointer;border:none;transition:all .2s}.btn:active{transform:scale(.96)}
+/* CODE PAGE */
 .code-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center}
 .code-page .icon{font-size:48px;margin-bottom:20px}
 .code-page h1{font-size:24px;font-weight:700;margin-bottom:8px}
@@ -21,6 +22,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .code-page .submit-btn{background:#292524;color:#fff;padding:14px 48px;border-radius:999px;font-size:16px;letter-spacing:2px;margin-top:12px}
 .code-page .submit-btn:hover{background:#44403c}
 .code-page .submit-btn:disabled{background:#d6d3d1;cursor:not-allowed}
+.code-page .loading-hint{font-size:11px;color:#d6d3d1;margin-top:20px}
+/* QUIZ PAGE */
 .quiz-page{min-height:100vh;padding:32px 16px;display:flex;flex-direction:column}
 .quiz-page .top-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#a8a29e;margin-bottom:8px}
 .quiz-page .bar-track{width:100%;height:4px;background:#e7e5e4;border-radius:99px;overflow:hidden;margin-bottom:28px}
@@ -39,6 +42,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .quiz-page .btns button.primary{background:#292524;color:#fff;border:none}
 .quiz-page .btns button.primary:hover{background:#44403c}
 .quiz-page .btns button:disabled{background:#e7e5e4;color:#a8a29e;cursor:not-allowed;border:none}
+/* RESULT PAGE */
 .result-page{min-height:100vh;padding:32px 16px 48px;display:flex;flex-direction:column;align-items:center}
 .r-label{font-size:11px;letter-spacing:5px;color:#a8a29e;margin-bottom:12px;text-align:center}
 .r-emoji{font-size:64px;margin-bottom:4px;text-align:center}
@@ -60,7 +64,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .restart-btn{background:#292524;color:#fff;padding:10px 36px;border-radius:999px;font-size:14px;letter-spacing:2px;border:none;cursor:pointer;margin-bottom:24px}
 .restart-btn:hover{background:#44403c}
 .hidden{display:none!important}
-/* admin */
+/* ADMIN */
 .admin-link{position:fixed;bottom:12px;right:16px;font-size:10px;color:#d6d3d1;cursor:pointer;text-decoration:none;background:none;border:none}
 .admin-panel{max-width:440px;margin:0 auto;padding:32px 16px;min-height:100vh}
 .admin-panel h2{font-size:20px;margin-bottom:20px}
@@ -69,11 +73,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .admin-panel .code-list{font-size:12px;font-family:monospace;line-height:2;max-height:400px;overflow-y:auto;background:#fff;border-radius:8px;padding:12px}
 .admin-panel .code-list .used{color:#a8a29e;text-decoration:line-through}
 .admin-panel .code-list .unused{color:#292524}
+/* SHARE */
 .share-btn{background:linear-gradient(135deg,#8B4513,#a0522d);color:#fff;padding:12px 40px;border-radius:999px;font-size:15px;letter-spacing:2px;border:none;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(139,69,19,.25)}.share-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,69,19,.35)}
 </style>
 </head>
 <body>
-
 <!-- CODE ENTRY -->
 <div id="codePage" class="code-page fade-in wrap">
 <div class="icon">🔐</div>
@@ -81,8 +85,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 <p class="sub">请输入你的专属验证码</p>
 <input type="text" id="codeInput" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" oninput="formatCode()">
 <p class="error" id="codeError"></p>
-<button class="btn submit-btn" id="submitCode" onclick="validateCode()">进入测试</button>
-<p style="font-size:11px;color:#d6d3d1;margin-top:20px">验证码购买后 30 分钟内有效 · 单设备绑定 · 一码一用</p>
+<button class="btn submit-btn" id="submitCode" onclick="validateCode()" disabled>加载中...</button>
+<p class="loading-hint">验证码购买后 30 分钟内有效 · 单设备绑定 · 一码一用</p>
 </div>
 
 <!-- QUIZ -->
@@ -105,16 +109,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 <div id="adminPanel" class="admin-panel wrap hidden">
 <h2>验证码管理</h2>
 <div class="stat" id="adminUnused">-</div>
-<div class="stat-label">剩余可用验证码</div>
+<div class="stat-label">剩余可用验证码（本设备）</div>
+<div style="font-size:11px;color:#a8a29e;margin-bottom:10px">注：仅显示当前设备已验证的码。实际库存请查看小红书后台。</div>
 <div class="code-list" id="adminCodeList"></div>
 <button class="btn restart-btn" onclick="hideAdmin()" style="margin-top:20px">返回</button>
 </div>
 
-
 <script>
-// ── CODE SYSTEM ──
-var CODE_HASHES=["26645ad389fc9a38","78b8305f96fc5097","b3ea1fa178d15b24","9e27be67c27dba2d","8f36afd06abb85df","75570a4313239f6a","2ed9b89a904e192b","c0438c0d5d69a534","fd6e4d19d1558ae9","7a29458345c6b10c","af7cb1e93309eddb","524db26d64a64088","501913ab3d880cee","50067cde7fff5800","325543474c1217c1","b792c205c7b23d23","e988b0aa1a64c23b","9cab5d729f641eb1","fe238e7b543bdc9e","22d0925aa0ceccbc","b6b8feee401a52a2","071dcf3211d6c75c","a5327c1b29cd0a5d","8ae3967a3fa02b50","032260d73ca88e30","6bff1c85a2f4c9b8","b80637651f3bddde","26a5ce6d68a60a06","902134346d587a33","35e2d7342cdaae56","bcb2f1a3adfb3c90","492f84c578abed6d","4364b7c8a07889b1","226bdf692719d51b","acaf2f499f96b233","c7a9ab51b24bf0fa","0ffcfa887a6efd90","147f01a7f9b862d6","af45b631b50dc042","bf37cf235f3a1eff","569185bc5a9e2f2c","114b342aaec3fa35","e6e9a0d7bcdb231f","a16e79519f81dac8","2496cd2b6078bf8b","50f035b4981bd526","9d10b98392766322","38a8569f51d21746","bc8076f729f8b26d","f8feecd4ff0320d8","d17ccbd35145f5fa","e8fe4b9cf27e0669","59504a115cb259f3","f74ae608cbd51227","3b7d0772a8d65bc6","79eeb634c846df0b","ad87c95ed499d9ac","63ff6d0b429b7c54","ee6ec57eb1879e6b","b1806e3cc941f04a","014a119faddbd0c6","36f5766efdccffb3","94cca22d5defc163","7019d9b3f580086d","fe4c3c0cc9d26077","b1e6bca3368958f4","daa65b5f305bb8eb","c22db42aff9ac4c5","872ccaf249afbbe1","e562db0828b5b397","4bf78adedcfae90e","587f844b8c938f6d","35edd9c62571fdcb","88ba9bda03aaf349","924d5b79d3280e32","70a7974ec7d634ce","b8a327e2524c3d19","12d67bf4881186f1","aec60e3cff4a6b5b","3fe2cceb6115c073","fada89bc1866e318","ab72ee0ca408b08a","d190f965a18229e9","0b77bd6575cbc9a6","d7150fe3b9077988","faca74a823bb5587","90bf3b218ccb9d68","d43429bda76b6a39","7284a03fb553a729","80edd0026ac7231f","88fcce139b9b1167","08afa4e2da38cc68","bc100550ad4b5053","0e3697ca096319c1","2378ce03d7d6153a","83bae8c081278ab0","79c325a047930556","efd7528eb6ab0346","1b618551202047e6","322feae3ef57a86d"];
-var CODE_LIST=['CWBU-QQH6','MANT-XZW3','SC2G-3YTB','AHTA-RKMU','EPAY-ENMR','WBYU-7H7Y','ATRJ-KELY','2RES-CYB8','QSGW-N3FY','EJ9D-3UQQ','VVWU-KRFN','4L7Q-98TK','UKWE-EKBN','8YY6-6WMF','Y95D-3JA5','ZPT9-CCJH','YW6L-BF33','GJL2-TAMN','H8UA-GCHM','6SMQ-ALWU','B3TY-VVGN','QZG5-V2QQ','3SCJ-7BXC','N4CX-E7VP','4W9C-KRG7','5RR3-DYK6','RMPQ-22QH','WR3U-DHVQ','2KH3-C34W','G4X8-R5LA','Y74U-XKQB','EP7R-QXHZ','JTDA-9DG5','8WBA-WNAK','J2BM-V4FZ','VHQ4-EJ4P','DQM2-45EG','GAUM-9KQX','BYDY-DTFC','TRUF-MPBZ','QWE7-SDAQ','FJWJ-F3HP','7N8Y-LWNN','MTKM-9FUL','SLLL-FLBH','5UEQ-X95B','9BL5-BY8P','NJXD-P2CU','5RTE-M7AH','LCH7-3USC','R4YA-ZH3S','WNX5-LME4','NQSP-CZK2','BVWC-3XD5','Z4PM-ZAYE','2PHZ-3GZ6','A7VA-TX3R','YXCZ-THBW','KC4U-QKHX','JYGB-SXQC','Y86K-8EMY','BX3H-R3U4','EGSB-VMLN','9YS9-DF3T','EDNX-DKBQ','2C9S-HGVN','2F3P-9PU2','P58G-DWB2','A8W8-4TW7','EMPT-EDFP','QYDE-U4TD','NX7U-6W5R','QUZ5-7DFT','CBCR-SJ82','R28T-KCKQ','GZ9J-DLHE','4DMN-QQKK','V5DQ-T9PR','EK86-6UXX','W96K-RQKY','T5M8-N5H2','9MEE-F22F','N2RZ-7QN6','ANR6-TFBR','PHQZ-4SF4','HJR2-4L6B','YEUR-3RVY','7EGM-6SFX','J9AD-F9R5','R6ZC-QYRT','KFW3-WE2D','99YY-NYHT','JQUZ-2NEJ','5R3P-BUTP','H4GX-JWRX','XEVG-NCAR','T8HZ-V6U3','FM8T-KB8C','6N8M-JEGH','ZKK5-SRM2','ZAJU-RT9R'];
+// ── FALLBACK CODES (100 个，网站加载失败时使用) ──
+var FB_HASHES=["26645ad389fc9a38","78b8305f96fc5097","b3ea1fa178d15b24","9e27be67c27dba2d","8f36afd06abb85df","75570a4313239f6a","2ed9b89a904e192b","c0438c0d5d69a534","fd6e4d19d1558ae9","7a29458345c6b10c","af7cb1e93309eddb","524db26d64a64088","501913ab3d880cee","50067cde7fff5800","325543474c1217c1","b792c205c7b23d23","e988b0aa1a64c23b","9cab5d729f641eb1","fe238e7b543bdc9e","22d0925aa0ceccbc","b6b8feee401a52a2","071dcf3211d6c75c","a5327c1b29cd0a5d","8ae3967a3fa02b50","032260d73ca88e30","6bff1c85a2f4c9b8","b80637651f3bddde","26a5ce6d68a60a06","902134346d587a33","35e2d7342cdaae56","bcb2f1a3adfb3c90","492f84c578abed6d","4364b7c8a07889b1","226bdf692719d51b","acaf2f499f96b233","c7a9ab51b24bf0fa","0ffcfa887a6efd90","147f01a7f9b862d6","af45b631b50dc042","bf37cf235f3a1eff","569185bc5a9e2f2c","114b342aaec3fa35","e6e9a0d7bcdb231f","a16e79519f81dac8","2496cd2b6078bf8b","50f035b4981bd526","9d10b98392766322","38a8569f51d21746","bc8076f729f8b26d","f8feecd4ff0320d8","d17ccbd35145f5fa","e8fe4b9cf27e0669","59504a115cb259f3","f74ae608cbd51227","3b7d0772a8d65bc6","79eeb634c846df0b","ad87c95ed499d9ac","63ff6d0b429b7c54","ee6ec57eb1879e6b","b1806e3cc941f04a","014a119faddbd0c6","36f5766efdccffb3","94cca22d5defc163","7019d9b3f580086d","fe4c3c0cc9d26077","b1e6bca3368958f4","daa65b5f305bb8eb","c22db42aff9ac4c5","872ccaf249afbbe1","e562db0828b5b397","4bf78adedcfae90e","587f844b8c938f6d","35edd9c62571fdcb","88ba9bda03aaf349","924d5b79d3280e32","70a7974ec7d634ce","b8a327e2524c3d19","12d67bf4881186f1","aec60e3cff4a6b5b","3fe2cceb6115c073","fada89bc1866e318","ab72ee0ca408b08a","d190f965a18229e9","0b77bd6575cbc9a6","d7150fe3b9077988","faca74a823bb5587","90bf3b218ccb9d68","d43429bda76b6a39","7284a03fb553a729","80edd0026ac7231f","88fcce139b9b1167","08afa4e2da38cc68","bc100550ad4b5053","0e3697ca096319c1","2378ce03d7d6153a","83bae8c081278ab0","79c325a047930556","efd7528eb6ab0346","1b618551202047e6","322feae3ef57a86d"];
+var FB_CODES=['CWBU-QQH6','MANT-XZW3','SC2G-3YTB','AHTA-RKMU','EPAY-ENMR','WBYU-7H7Y','ATRJ-KELY','2RES-CYB8','QSGW-N3FY','EJ9D-3UQQ','VVWU-KRFN','4L7Q-98TK','UKWE-EKBN','8YY6-6WMF','Y95D-3JA5','ZPT9-CCJH','YW6L-BF33','GJL2-TAMN','H8UA-GCHM','6SMQ-ALWU','B3TY-VVGN','QZG5-V2QQ','3SCJ-7BXC','N4CX-E7VP','4W9C-KRG7','5RR3-DYK6','RMPQ-22QH','WR3U-DHVQ','2KH3-C34W','G4X8-R5LA','Y74U-XKQB','EP7R-QXHZ','JTDA-9DG5','8WBA-WNAK','J2BM-V4FZ','VHQ4-EJ4P','DQM2-45EG','GAUM-9KQX','BYDY-DTFC','TRUF-MPBZ','QWE7-SDAQ','FJWJ-F3HP','7N8Y-LWNN','MTKM-9FUL','SLLL-FLBH','5UEQ-X95B','9BL5-BY8P','NJXD-P2CU','5RTE-M7AH','LCH7-3USC','R4YA-ZH3S','WNX5-LME4','NQSP-CZK2','BVWC-3XD5','Z4PM-ZAYE','2PHZ-3GZ6','A7VA-TX3R','YXCZ-THBW','KC4U-QKHX','JYGB-SXQC','Y86K-8EMY','BX3H-R3U4','EGSB-VMLN','9YS9-DF3T','EDNX-DKBQ','2C9S-HGVN','2F3P-9PU2','P58G-DWB2','A8W8-4TW7','EMPT-EDFP','QYDE-U4TD','NX7U-6W5R','QUZ5-7DFT','CBCR-SJ82','R28T-KCKQ','GZ9J-DLHE','4DMN-QQKK','V5DQ-T9PR','EK86-6UXX','W96K-RQKY','T5M8-N5H2','9MEE-F22F','N2RZ-7QN6','ANR6-TFBR','PHQZ-4SF4','HJR2-4L6B','YEUR-3RVY','7EGM-6SFX','J9AD-F9R5','R6ZC-QYRT','KFW3-WE2D','99YY-NYHT','JQUZ-2NEJ','5R3P-BUTP','H4GX-JWRX','XEVG-NCAR','T8HZ-V6U3','FM8T-KB8C','6N8M-JEGH','ZKK5-SRM2','ZAJU-RT9R'];
+
+// ── DYNAMIC CODE POOL ──
+var CODE_HASHES=FB_HASHES;
+var CODE_LIST=FB_CODES;
+var CODES_LOADED=false;
+
+async function loadCodes(){
+try{
+var resp=await fetch('codes.json?'+Date.now());
+if(!resp.ok)throw new Error('HTTP '+resp.status);
+var data=await resp.json();
+if(data.codes&&data.hashes&&data.codes.length===data.hashes.length&&data.codes.length>0){
+CODE_HASHES=data.hashes;
+CODE_LIST=data.codes;
+CODES_LOADED=true;
+return true;
+}
+}catch(e){console.warn('codes.json 加载失败，使用内置验证码:',e.message);}
+CODE_HASHES=FB_HASHES;
+CODE_LIST=FB_CODES;
+return false;
+}
 
 async function shorthash(str){
 var e=new TextEncoder().encode(str);
@@ -148,11 +174,12 @@ var did=getDeviceId();
 var usedKey='_aes_u_'+hash;
 var used=localStorage.getItem(usedKey);
 var now=Date.now();
-if(used){
+if(used&&!CODES_LOADED){
 try{var d=JSON.parse(used);}catch(e){d={};}
 if(d.device&&d.device!==did){document.getElementById('codeError').textContent='此验证码已绑定其他设备';return}
 if(now-d.time>30*60*1000){document.getElementById('codeError').textContent='验证码已过期（30分钟有效）';return}
-}else{localStorage.setItem(usedKey,JSON.stringify({device:did,time:now}));}
+}
+if(!used){localStorage.setItem(usedKey,JSON.stringify({device:did,time:now}));}
 
 VALIDATED=true;VALIDATED_HASH=hash;
 startQuiz();
@@ -160,7 +187,7 @@ startQuiz();
 
 function $(id){return document.getElementById(id)}
 
-// ── QUIZ ──
+// ── QUIZ DATA ──
 var Q=[
 {q:"你第一眼被一个人的什么吸引？",o:[{t:"五官的立体度和线条",v:{s:2,c:1,face:2}},{t:"整体的气质和氛围感",v:{l:2,w:1,sty:2}},{t:"眼神和微表情",v:{w:2,l:1,face:1}},{t:"身材比例和体态",v:{s:1,h:1,sty:1}}]},
 {q:"你最喜欢的穿搭风格是？",o:[{t:"简约高级，黑白灰米色系",v:{h:2,c:1,col:1,sty:2}},{t:"温柔知性，针织长裙平底鞋",v:{w:2,l:1,tex:2,sty:1}},{t:"飒爽利落，皮衣阔腿裤",v:{s:2,c:1,tex:1,sty:2}},{t:"慵懒随性，oversized+素颜",v:{l:2,w:1,sty:1}}]},
@@ -201,52 +228,47 @@ var icons={col:'🎨',tex:'🧵',sty:'👗',face:'😊',skin:'✨'};var titles={
 for(var di=0;di<order.length;di++){var key=order[di];var advs={col:['大胆尝试撞色搭配，高饱和色+中性色是你的主场。','用中性色打底加一件有颜色的单品就是你的最佳公式。','黑白灰是你的舒适区——偶尔一抹酒红或墨绿会惊艳。'],tex:['你在意衣服的触感胜过款式——这是高级的审美直觉。','你的质感审美走实用路线——舒服但不随便。','试着在T恤和衬衫上多花一点预算，质感差距很明显。'],sty:['你的穿搭有强烈的个人风格，不需要跟着潮流走。','你的风格在经典和潮流之间找到了平衡。','你穿衣服的核心是舒服——但舒服不等于没风格。'],face:['你的长相有很强的辨识度，淡妆比浓妆更能突出优点。','你的五官属于耐看型，越看越舒服。','你让人看了觉得很舒服，不用追求网红滤镜里的标准化五官。'],skin:['你对肤色有很清晰的审美——知道自己适合冷调还是暖调。','你对肤色这件事比较放松，自然就好。','选最接近自己脖子颜色的底妆色号，比白了半个色号自然得多。']};var pool=advs[key]||['保持自己的风格就是最好的风格。'];var idx=Math.abs((SS[key]||0)*7+key.length*3)%pool.length;h+='<div class="advice-block"><div class="a-title">'+icons[key]+' '+titles[key]+'</div><div class="a-body">'+pool[idx]+'</div></div>';if(di<order.length-1)h+='<div class="advice-sep"></div>';}
 h+='</div>';h+='<div class="tags-row">';for(var gi=0;gi<r.g.length;gi++)h+='<span>#'+r.g[gi]+'</span>';h+='</div>';h+='</div><button class="btn share-btn" id="shareBtn" onclick="shareResult()">📸 点击保存截图</button><button class="btn restart-btn" onclick="restart()">再测一次</button>';$('result').innerHTML=h;$('quiz').classList.add('hidden');$('result').classList.remove('hidden');window.scrollTo(0,0);}
 function restart(){if(VALIDATED){$('result').classList.add('hidden');startQuiz();}}
-// ── Admin ──
+// ── ADMIN ──
 function showAdmin(){
-var hd=document.getElementById('codePage');var qz=document.getElementById('quiz');var rs=document.getElementById('result');
+var hd=$('codePage'),qz=$('quiz'),rs=$('result');
 if(!hd.classList.contains('hidden'))hd.classList.add('hidden');else if(!qz.classList.contains('hidden'))qz.classList.add('hidden');else if(!rs.classList.contains('hidden'))rs.classList.add('hidden');
-document.getElementById('adminPanel').classList.remove('hidden');
+$('adminPanel').classList.remove('hidden');
 var unused=0,html='';
 for(var i=0;i<CODE_LIST.length;i++){
 var code=CODE_LIST[i],hash=CODE_HASHES[i];
 var usedEntry=localStorage.getItem('_aes_u_'+hash);
 if(usedEntry){html+='<span class="used">'+code+'</span> ';}else{html+='<span class="unused">'+code+'</span> ';unused++;}
 }
-document.getElementById('adminUnused').textContent=unused;
-document.getElementById('adminCodeList').innerHTML=html||'加载中...';
+$('adminUnused').textContent=unused;
+$('adminCodeList').innerHTML=html||'(暂无数据)';
 }
-function hideAdmin(){document.getElementById('adminPanel').classList.add('hidden');document.getElementById('codePage').classList.remove('hidden');}
-// ── Share (html2canvas) ──
+function hideAdmin(){$('adminPanel').classList.add('hidden');$('codePage').classList.remove('hidden');}
+// ── SHARE ──
 function shareResult(){
-var btn=document.getElementById('shareBtn');
+var btn=$('shareBtn');
 btn.disabled=true;btn.textContent='正在生成截图...';
-var target=document.getElementById('resultContent');
-html2canvas(target,{
-  backgroundColor:'#f5f0eb',
-  scale:2,
-  useCORS:true,
-  logging:false
-}).then(function(canvas){
-  canvas.toBlob(function(blob){
-    if(!blob){btn.disabled=false;btn.textContent='📸 点击保存截图';alert('生成失败，请重试');return;}
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');
-    a.href=url;
-    a.download='我的审美基因.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function(){URL.revokeObjectURL(url)},1000);
-    btn.disabled=false;btn.textContent='📸 点击保存截图';
-  },'image/png');
-}).catch(function(e){
-  console.error(e);
-  btn.disabled=false;btn.textContent='📸 点击保存截图';
-  alert('截图生成失败：'+e.message);
-});
+var target=$('resultContent');
+html2canvas(target,{backgroundColor:'#f5f0eb',scale:2,useCORS:true,logging:false}).then(function(canvas){
+canvas.toBlob(function(blob){
+if(!blob){btn.disabled=false;btn.textContent='📸 点击保存截图';alert('生成失败，请重试');return;}
+var url=URL.createObjectURL(blob);
+var a=document.createElement('a');a.href=url;a.download='我的审美基因.png';
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+setTimeout(function(){URL.revokeObjectURL(url)},1000);
+btn.disabled=false;btn.textContent='📸 点击保存截图';
+},'image/png');
+}).catch(function(e){console.error(e);btn.disabled=false;btn.textContent='📸 点击保存截图';alert('截图生成失败：'+e.message);});
 }
-// Init
-(function(){var h=localStorage.getItem('_aes_valid');if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}})();
+
+// ── INIT ──
+(async function(){
+await loadCodes();
+var h=localStorage.getItem('_aes_valid');
+if(h&&CODE_HASHES.indexOf(h)>=0){VALIDATED=true;VALIDATED_HASH=h;$('codePage').classList.add('hidden');startQuiz();}else{
+$('submitCode').textContent='进入测试';
+$('submitCode').disabled=false;
+}
+})();
 </script>
 </body>
 </html>

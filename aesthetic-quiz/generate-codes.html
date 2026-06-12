@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>验证码生成器 · 审美测试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f0eb;color:#292524;min-height:100vh;padding:32px 16px;display:flex;flex-direction:column;align-items:center}
+.wrap{width:100%;max-width:500px}
+h1{font-size:22px;margin-bottom:4px}
+.sub{font-size:13px;color:#78716c;margin-bottom:28px}
+.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.card input,.card textarea{width:100%;padding:10px 12px;border:2px solid #e7e5e4;border-radius:8px;font-size:14px;font-family:monospace;outline:none}
+.card input:focus,.card textarea:focus{border-color:#8B4513}
+.inline{display:flex;gap:12px;margin-bottom:24px}
+.inline .card{flex:1;margin-bottom:0;text-align:center}
+.inline .card .big{font-size:36px;font-weight:700}
+.inline .card .lbl{font-size:11px;color:#a8a29e}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:16px;cursor:pointer;font-weight:600;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#292524;color:#fff;margin-bottom:12px}
+.btn-primary:hover{background:#44403c}
+.btn-primary:disabled{background:#d6d3d1;cursor:not-allowed}
+.btn-outline{background:#fff;color:#292524;border:2px solid #e7e5e4;margin-bottom:12px}
+.btn-outline:hover{border-color:#8B4513}
+.btn-csv{background:#8B4513;color:#fff}
+.btn-csv:hover{background:#6b3410}
+.preview{max-height:300px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:2;padding:8px;background:#fafaf9;border-radius:6px}
+.preview span{margin-right:16px}
+.code-valid{color:#292524}
+.code-used{color:#a8a29e;text-decoration:line-through}
+.notice{font-size:12px;color:#a8a29e;margin-top:16px;line-height:1.6}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🔑 验证码生成器</h1>
+<p class="sub">批量生成审美测试验证码 · 导出 CSV 用于小红书自动发货</p>
+
+<div class="card">
+<label>生成数量</label>
+<input type="number" id="count" value="200" min="1" max="5000">
+</div>
+
+<button class="btn btn-primary" id="genBtn" onclick="generate()">生成验证码</button>
+
+<div id="resultArea" class="hidden">
+<div style="display:flex;gap:12px;margin-bottom:12px">
+<div class="card" style="flex:1;margin-bottom:0;text-align:center">
+<div class="big" id="totalCount">-</div>
+<div class="lbl">已生成</div>
+</div>
+<div class="card" style="flex:1;margin-bottom:0;text-align:center">
+<div class="big" id="sampleCode">-</div>
+<div class="lbl">示例验证码</div>
+</div>
+</div>
+
+<div class="card">
+<label>预览（前20条）</label>
+<div class="preview" id="preview"></div>
+</div>
+
+<button class="btn btn-csv" id="csvBtn" onclick="downloadCSV()">📦 下载 CSV（小红书自动发货用）</button>
+<button class="btn btn-outline" id="jsonBtn" onclick="downloadJSON()">📋 下载 JSON（更新网站用）</button>
+
+<p class="notice">
+<strong>使用方法：</strong><br>
+1. 点击「下载 CSV」→ 在小红书服务市场（如阿奇索）上传此 CSV 作为卡密库<br>
+2. 点击「下载 JSON」→ 把 codes.json 放到网站同目录下<br>
+3. 网站会自动从 codes.json 读取验证码，无需改代码<br>
+4. 每次补货时重新生成一批，替换旧的 codes.json 并重新上传 CSV
+</p>
+</div>
+
+<div id="statusMsg" style="text-align:center;font-size:14px;color:#8B4513;margin-top:8px"></div>
+</div>
+
+<script>
+var generatedCodes=[];
+var generatedHashes=[];
+
+function randomCode(){
+var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去掉容易混淆的字符
+var r='';
+for(var i=0;i<8;i++)r+=chars[Math.floor(Math.random()*chars.length)];
+return r.slice(0,4)+'-'+r.slice(4,8);
+}
+
+async function shorthash(str){
+var e=new TextEncoder().encode(str);
+var h=await crypto.subtle.digest('SHA-256',e);
+return Array.from(new Uint8Array(h)).map(function(b){return b.toString(16).padStart(2,'0')}).join('').slice(0,16);
+}
+
+async function generate(){
+var btn=document.getElementById('genBtn');
+var count=parseInt(document.getElementById('count').value)||200;
+if(count<1||count>5000){alert('数量范围：1-5000');return}
+
+btn.disabled=true;
+btn.textContent='生成中...';
+var msg=document.getElementById('statusMsg');
+msg.textContent='';
+
+generatedCodes=[];
+generatedHashes=[];
+
+var seen=new Set();
+var batchSize=50;
+
+for(var i=0;i<count;i+=batchSize){
+var end=Math.min(i+batchSize,count);
+var batch=[];
+for(var j=i;j<end;j++){
+var code;
+do{code=randomCode();}while(seen.has(code));
+seen.add(code);
+batch.push(code);
+}
+for(var j=0;j<batch.length;j++){
+generatedCodes.push(batch[j]);
+generatedHashes.push(await shorthash(batch[j].replace('-','')));
+}
+msg.textContent='已生成 '+(i+batchSize>count?count:i+batchSize)+' / '+count+' ...';
+}
+
+var ph='';
+for(var i=0;i<Math.min(20,generatedCodes.length);i++)ph+='<span class="code-valid">'+generatedCodes[i]+'</span> ';
+document.getElementById('preview').innerHTML=ph;
+document.getElementById('totalCount').textContent=generatedCodes.length;
+document.getElementById('sampleCode').textContent=generatedCodes[0];
+document.getElementById('resultArea').classList.remove('hidden');
+btn.textContent='重新生成';
+btn.disabled=false;
+msg.textContent='✅ 已生成 '+generatedCodes.length+' 个验证码，可下载 CSV / JSON';
+}
+
+function downloadJSON(){
+if(!generatedCodes.length){alert('请先生成验证码');return}
+var data={codes:[],hashes:[]};
+for(var i=0;i<generatedCodes.length;i++){data.codes.push(generatedCodes[i]);data.hashes.push(generatedHashes[i]);}
+var blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+var url=URL.createObjectURL(blob);
+var a=document.createElement('a');
+a.href=url;a.download='codes.json';
+document.body.appendChild(a);a.click();
+document.body.removeChild(a);
+setTimeout(function(){URL.revokeObjectURL(url)},1000);
+}
+
+function downloadCSV(){
+if(!generatedCodes.length){alert('请先生成验证码');return}
+var lines=['验证码,哈希'];
+for(var i=0;i<generatedCodes.length;i++)lines.push(generatedCodes[i]+','+generatedHashes[i]);
+var blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+var url=URL.createObjectURL(blob);
+var a=document.createElement('a');
+a.href=url;a.download='codes-xiaohongshu.csv';
+document.body.appendChild(a);a.click();
+document.body.removeChild(a);
+setTimeout(function(){URL.revokeObjectURL(url)},1000);
+}
+</script>
+</body>
+</html>
