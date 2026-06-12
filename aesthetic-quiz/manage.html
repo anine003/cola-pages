@@ -36,17 +36,18 @@ h1{font-size:22px;margin-bottom:4px}
 .history .item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f4;font-size:13px}
 .history .item .used-code{font-family:monospace;color:#a8a29e;text-decoration:line-through}
 .history .item .time{font-size:11px;color:#d6d3d1}
-.copied-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#292524;color:#fff;padding:10px 24px;border-radius:999px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s}
-.copied-toast.show{opacity:1}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#292524;color:#fff;padding:10px 24px;border-radius:999px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.error{background:#CC2222}
 </style>
 </head>
 <body>
-<div class="copied-toast" id="toast">✅ 已复制到剪贴板</div>
+<div class="toast" id="toast"></div>
 <div class="wrap">
 <h1>🎫 发码管理</h1>
 <p class="sub">审美测试验证码 · 手动发货工具</p>
 
-<div class="card" id="statsCard">
+<div class="card">
   <div class="stat-grid">
     <div class="stat">
       <div class="num" id="statTotal">-</div>
@@ -69,7 +70,7 @@ h1{font-size:22px;margin-bottom:4px}
     <div class="code" id="nextCode">---</div>
     <div class="idx" id="nextIdx"></div>
   </div>
-  <button class="btn btn-primary" id="copyBtn" onclick="copyNext()">📋 复制并标记已发出</button>
+  <button class="btn btn-primary" id="copyBtn" onclick="onCopyClick()">📋 复制并标记已发出</button>
   <p style="font-size:11px;color:#a8a29e;text-align:center;margin-top:6px">复制后发给买家即可</p>
 </div>
 
@@ -106,49 +107,61 @@ function saveSent(list) {
 }
 
 function loadCodes() {
-  return fetch('./codes.json')
-    .then(r => r.json())
-    .then(data => {
-      ALL_CODES = data.codes;
-      ALL_HASHES = data.hashes;
-      render();
-    })
-    .catch(e => {
-      document.getElementById('nextCode').textContent = '加载失败';
-      console.error(e);
-    });
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', './codes.json', true);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        ALL_CODES = data.codes || [];
+        ALL_HASHES = data.hashes || [];
+      } catch(e) {
+        ALL_CODES = [];
+        console.error('Parse error:', e);
+      }
+    }
+    render();
+  };
+  xhr.onerror = function() {
+    console.error('Failed to load codes.json');
+    render();
+  };
+  xhr.send();
 }
 
 function render() {
   var sent = sentCodes();
-  var sentSet = new Set(sent.map(s => s.code));
+  var sentSet = {};
+  for (var i = 0; i < sent.length; i++) { sentSet[sent[i].code] = true; }
 
-  // Stats
   document.getElementById('statTotal').textContent = ALL_CODES.length;
   document.getElementById('statUsed').textContent = sent.length;
   var remain = ALL_CODES.length - sent.length;
   document.getElementById('statRemain').textContent = remain;
   if (remain < 10) document.getElementById('statRemain').style.color = '#CC2222';
-  if (remain === 0) {
-    document.getElementById('copyBtn').disabled = true;
-    document.getElementById('copyBtn').textContent = '码已用完，请生成新码';
-  }
 
-  // Next code
+  var nextCode = '';
   var nextIdx = -1;
   for (var i = 0; i < ALL_CODES.length; i++) {
-    if (!sentSet.has(ALL_CODES[i])) { nextIdx = i; break; }
+    if (!sentSet[ALL_CODES[i]]) { nextCode = ALL_CODES[i]; nextIdx = i; break; }
   }
-  if (nextIdx >= 0) {
-    document.getElementById('nextCode').textContent = ALL_CODES[nextIdx];
+
+  var btn = document.getElementById('copyBtn');
+  if (nextCode) {
+    document.getElementById('nextCode').textContent = nextCode;
     document.getElementById('nextIdx').textContent = '第 ' + (nextIdx + 1) + ' / ' + ALL_CODES.length + ' 个';
-    document.getElementById('copyBtn').disabled = false;
-    document.getElementById('copyBtn').textContent = '📋 复制并标记已发出';
+    btn.disabled = false;
+    btn.textContent = '📋 复制并标记已发出';
   } else {
-    document.getElementById('nextCode').textContent = '—';
-    document.getElementById('nextIdx').textContent = '全部已用完';
-    document.getElementById('copyBtn').disabled = true;
-    document.getElementById('copyBtn').textContent = '码已用完，请生成新码';
+    if (ALL_CODES.length === 0) {
+      document.getElementById('nextCode').textContent = '加载中...';
+      document.getElementById('nextIdx').textContent = '';
+    } else {
+      document.getElementById('nextCode').textContent = '—';
+      document.getElementById('nextIdx').textContent = '全部已用完';
+    }
+    btn.disabled = true;
+    btn.textContent = ALL_CODES.length === 0 ? '加载中...' : '码已用完';
   }
 
   // History
@@ -159,54 +172,100 @@ function render() {
     noHist.style.display = 'block';
   } else {
     noHist.style.display = 'none';
+    var html = '';
     var recent = sent.slice(-10).reverse();
-    list.innerHTML = recent.map(function(s) {
-      return '<div class="item"><span class="used-code">' + s.code + '</span><span class="time">' + (s.time || '') + '</span></div>';
-    }).join('');
+    for (var j = 0; j < recent.length; j++) {
+      html += '<div class="item"><span class="used-code">' + recent[j].code + '</span><span class="time">' + (recent[j].time || '') + '</span></div>';
+    }
+    list.innerHTML = html;
   }
 }
 
-function copyNext() {
+function onCopyClick() {
   var sent = sentCodes();
-  var sentSet = new Set(sent.map(s => s.code));
+  var sentSet = {};
+  for (var i = 0; i < sent.length; i++) { sentSet[sent[i].code] = true; }
+
   var code = '';
   for (var i = 0; i < ALL_CODES.length; i++) {
-    if (!sentSet.has(ALL_CODES[i])) { code = ALL_CODES[i]; break; }
+    if (!sentSet[ALL_CODES[i]]) { code = ALL_CODES[i]; break; }
   }
-  if (!code) return;
 
-  // Copy to clipboard
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(code).then(function() {
-      markSent(code);
-    });
-  } else {
-    // Fallback
-    var ta = document.createElement('textarea');
-    ta.value = code;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    markSent(code);
+  if (!code) {
+    showToast('没有可用验证码了', true);
+    return;
+  }
+
+  // Try modern clipboard API first
+  var copied = false;
+  var finish = function() {
+    if (copied) return;
+    copied = true;
+    addSent(code);
+  };
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function() {
+        finish();
+      }).catch(function() {
+        fallbackCopy(code, finish);
+      });
+    } else {
+      fallbackCopy(code, finish);
+    }
+  } catch(e) {
+    fallbackCopy(code, finish);
   }
 }
 
-function markSent(code) {
+function fallbackCopy(text, callback) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  ta.style.top = '-9999px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    var ok = document.execCommand('copy');
+    if (ok) {
+      callback();
+    } else {
+      showToast('复制失败，请手动复制验证码：' + text, true);
+    }
+  } catch(e) {
+    showToast('复制失败，请手动复制验证码：' + text, true);
+  }
+  document.body.removeChild(ta);
+}
+
+function addSent(code) {
   var sent = sentCodes();
   var now = new Date();
-  var timeStr = now.getMonth() + 1 + '/' + now.getDate() + ' ' + 
-    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var timeStr = (now.getMonth() + 1) + '/' + now.getDate() + ' ' +
+    ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
   sent.push({ code: code, time: timeStr });
   saveSent(sent);
   render();
-  showToast();
+  showToast('✅ 已复制 ' + code + '，发给买家即可', false);
 }
 
-function showToast() {
+function showToast(msg, isError) {
   var t = document.getElementById('toast');
-  t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 1500);
+  t.textContent = msg;
+  t.className = 'toast';
+  if (isError) t.className += ' error';
+  // Force reflow
+  void t.offsetWidth;
+  t.className += ' show';
+  if (isError) t.className += ' error';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(function() {
+    t.className = 'toast';
+    if (isError) t.className += ' error';
+  }, 2000);
 }
 
 function reloadCodes() {
@@ -215,7 +274,7 @@ function reloadCodes() {
 }
 
 function resetAll() {
-  if (!confirm('确定要清空所有发码记录吗？\n\n码库不会变，只是"已发出"的记录会被清空。\n这个操作不可撤销。')) return;
+  if (!confirm('确定要清空所有发码记录吗？\n\n码库不会变，只是"已发出"的记录会被清空。')) return;
   if (!confirm('再确认一次：清空所有已发出的记录？')) return;
   localStorage.removeItem(STORAGE_KEY);
   render();
