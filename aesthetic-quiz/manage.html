@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>发码管理 · 审美测试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f0eb;color:#292524;min-height:100vh;padding:32px 16px;display:flex;flex-direction:column;align-items:center}
+.wrap{width:100%;max-width:500px}
+h1{font-size:22px;margin-bottom:4px}
+.sub{font-size:13px;color:#78716c;margin-bottom:28px}
+.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.stat-grid{display:flex;gap:12px;margin-bottom:20px}
+.stat{flex:1;text-align:center;background:#fafaf9;border-radius:10px;padding:16px 8px}
+.stat .num{font-size:28px;font-weight:700}
+.stat .lbl{font-size:11px;color:#a8a29e;margin-top:2px}
+.code-display{background:#fafaf9;border:2px dashed #d6d3d1;border-radius:12px;padding:24px;text-align:center;margin-bottom:16px}
+.code-display .label{font-size:12px;color:#a8a29e;margin-bottom:8px}
+.code-display .code{font-size:36px;font-weight:700;letter-spacing:6px;font-family:monospace;color:#292524;margin-bottom:4px}
+.code-display .idx{font-size:11px;color:#d6d3d1}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:600;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#292524;color:#fff;margin-bottom:10px}
+.btn-primary:hover{background:#44403c}
+.btn-primary:disabled{background:#d6d3d1;cursor:not-allowed;color:#a8a29e}
+.btn-outline{background:#fff;color:#292524;border:2px solid #e7e5e4;margin-bottom:10px;font-size:14px}
+.btn-outline:hover{border-color:#8B4513}
+.btn-danger{background:#fff;color:#CC2222;border:2px solid #fecaca;font-size:13px;margin-top:8px}
+.btn-danger:hover{background:#fef2f2}
+.zero-state{text-align:center;padding:40px 0;color:#a8a29e}
+.zero-state .icon{font-size:48px;margin-bottom:12px}
+.zero-state p{font-size:13px;line-height:1.6}
+.back-link{display:inline-block;margin-top:20px;font-size:13px;color:#8B4513;text-decoration:none}
+.history{margin-top:12px}
+.history .item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f4;font-size:13px}
+.history .item .used-code{font-family:monospace;color:#a8a29e;text-decoration:line-through}
+.history .item .time{font-size:11px;color:#d6d3d1}
+.copied-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#292524;color:#fff;padding:10px 24px;border-radius:999px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s}
+.copied-toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="copied-toast" id="toast">✅ 已复制到剪贴板</div>
+<div class="wrap">
+<h1>🎫 发码管理</h1>
+<p class="sub">审美测试验证码 · 手动发货工具</p>
+
+<div class="card" id="statsCard">
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="num" id="statTotal">-</div>
+      <div class="lbl">总码数</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statRemain" style="color:#15803d">-</div>
+      <div class="lbl">剩余可用</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statUsed" style="color:#a8a29e">-</div>
+      <div class="lbl">已发出</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="code-display" id="nextCodeArea">
+    <div class="label">下一个验证码</div>
+    <div class="code" id="nextCode">---</div>
+    <div class="idx" id="nextIdx"></div>
+  </div>
+  <button class="btn btn-primary" id="copyBtn" onclick="copyNext()">📋 复制并标记已发出</button>
+  <p style="font-size:11px;color:#a8a29e;text-align:center;margin-top:6px">复制后发给买家即可</p>
+</div>
+
+<div class="card">
+  <h3 style="font-size:14px;margin-bottom:12px">📋 最近发出</h3>
+  <div class="history" id="historyList"></div>
+  <div class="zero-state" id="noHistory">
+    <div class="icon">📭</div>
+    <p>还没有发过验证码</p>
+    <p style="font-size:12px;color:#d6d3d1">点击上面的按钮发出第一个</p>
+  </div>
+</div>
+
+<div style="text-align:center">
+  <button class="btn btn-outline" onclick="reloadCodes()">🔄 重新加载码库</button>
+  <button class="btn btn-danger" onclick="resetAll()">⚠️ 重置所有记录</button>
+</div>
+
+<a class="back-link" href="./">← 返回测试</a>
+</div>
+
+<script>
+var STORAGE_KEY = '_aes_sent_codes';
+var ALL_CODES = [];
+var ALL_HASHES = [];
+
+function sentCodes() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function saveSent(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function loadCodes() {
+  return fetch('./codes.json')
+    .then(r => r.json())
+    .then(data => {
+      ALL_CODES = data.codes;
+      ALL_HASHES = data.hashes;
+      render();
+    })
+    .catch(e => {
+      document.getElementById('nextCode').textContent = '加载失败';
+      console.error(e);
+    });
+}
+
+function render() {
+  var sent = sentCodes();
+  var sentSet = new Set(sent.map(s => s.code));
+
+  // Stats
+  document.getElementById('statTotal').textContent = ALL_CODES.length;
+  document.getElementById('statUsed').textContent = sent.length;
+  var remain = ALL_CODES.length - sent.length;
+  document.getElementById('statRemain').textContent = remain;
+  if (remain < 10) document.getElementById('statRemain').style.color = '#CC2222';
+  if (remain === 0) {
+    document.getElementById('copyBtn').disabled = true;
+    document.getElementById('copyBtn').textContent = '码已用完，请生成新码';
+  }
+
+  // Next code
+  var nextIdx = -1;
+  for (var i = 0; i < ALL_CODES.length; i++) {
+    if (!sentSet.has(ALL_CODES[i])) { nextIdx = i; break; }
+  }
+  if (nextIdx >= 0) {
+    document.getElementById('nextCode').textContent = ALL_CODES[nextIdx];
+    document.getElementById('nextIdx').textContent = '第 ' + (nextIdx + 1) + ' / ' + ALL_CODES.length + ' 个';
+    document.getElementById('copyBtn').disabled = false;
+    document.getElementById('copyBtn').textContent = '📋 复制并标记已发出';
+  } else {
+    document.getElementById('nextCode').textContent = '—';
+    document.getElementById('nextIdx').textContent = '全部已用完';
+    document.getElementById('copyBtn').disabled = true;
+    document.getElementById('copyBtn').textContent = '码已用完，请生成新码';
+  }
+
+  // History
+  var list = document.getElementById('historyList');
+  var noHist = document.getElementById('noHistory');
+  if (sent.length === 0) {
+    list.innerHTML = '';
+    noHist.style.display = 'block';
+  } else {
+    noHist.style.display = 'none';
+    var recent = sent.slice(-10).reverse();
+    list.innerHTML = recent.map(function(s) {
+      return '<div class="item"><span class="used-code">' + s.code + '</span><span class="time">' + (s.time || '') + '</span></div>';
+    }).join('');
+  }
+}
+
+function copyNext() {
+  var sent = sentCodes();
+  var sentSet = new Set(sent.map(s => s.code));
+  var code = '';
+  for (var i = 0; i < ALL_CODES.length; i++) {
+    if (!sentSet.has(ALL_CODES[i])) { code = ALL_CODES[i]; break; }
+  }
+  if (!code) return;
+
+  // Copy to clipboard
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(function() {
+      markSent(code);
+    });
+  } else {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    markSent(code);
+  }
+}
+
+function markSent(code) {
+  var sent = sentCodes();
+  var now = new Date();
+  var timeStr = now.getMonth() + 1 + '/' + now.getDate() + ' ' + 
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  sent.push({ code: code, time: timeStr });
+  saveSent(sent);
+  render();
+  showToast();
+}
+
+function showToast() {
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 1500);
+}
+
+function reloadCodes() {
+  if (!confirm('重新加载会保留已发出的记录，确定吗？')) return;
+  loadCodes();
+}
+
+function resetAll() {
+  if (!confirm('确定要清空所有发码记录吗？\n\n码库不会变，只是"已发出"的记录会被清空。\n这个操作不可撤销。')) return;
+  if (!confirm('再确认一次：清空所有已发出的记录？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  render();
+}
+
+loadCodes();
+</script>
+</body>
+</html>
