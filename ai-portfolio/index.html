@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时间不存在 · AI 短片作品集</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: #111118;
+    --text: #e0e0e0;
+    --muted: #888;
+    --accent: #a78bfa;
+    --accent2: #7dd3fc;
+    --border: #1e1e2e;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Animated starfield background */
+  .stars {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+    opacity: 0;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.7; }
+  }
+
+  /* Main content */
+  .main {
+    position: relative; z-index: 1;
+    max-width: 880px; margin: 0 auto;
+    padding: 60px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 40px 0 50px;
+  }
+  .header .tag {
+    display: inline-block;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 36px; font-weight: 700; letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .header .sub {
+    font-size: 15px; color: var(--muted); font-weight: 400;
+  }
+
+  /* Divider */
+  .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 0 auto 50px;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 24px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    cursor: pointer;
+    text-decoration: none; color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at 80% 0%, rgba(167,139,250,0.06), transparent 60%);
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    border-color: rgba(167,139,250,0.3);
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card > * { position: relative; z-index: 1; }
+
+  .card .num {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 10px; font-weight: 600;
+  }
+  .card .title {
+    font-size: 18px; font-weight: 600; margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .card .desc {
+    font-size: 13px; color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .card .arrow {
+    font-size: 13px; color: var(--accent2);
+    display: flex; align-items: center; gap: 4px;
+    font-weight: 500;
+    transition: gap 0.2s ease;
+  }
+  .card:hover .arrow { gap: 8px; }
+
+  /* Footer */
+  .footer {
+    text-align: center; padding-top: 60px;
+    font-size: 13px; color: var(--muted);
+  }
+  .footer a { color: var(--accent2); text-decoration: none; }
+
+  /* Mobile */
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 26px; }
+    .main { padding: 40px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Starfield -->
+<div class="stars" id="stars"></div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="tag">AI · Short Film · Portfolio</div>
+    <h1>时间不存在</h1>
+    <p class="sub">用 AI 重新想象叙事的边界</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Grid -->
+  <div class="grid">
+
+    <a class="card" href="https://www.xiaohongshu.com/discovery/item/6a3533ef000000001700ae60?source=webshare&xhsshare=pc_web&xsec_token=ABD3KZm0PELMNV_BeztOcfnl8rVewEGmQCkP3eDvioWow=&xsec_source=pc_share" target="_blank" rel="noopener">
+      <div class="num">No. 01</div>
+      <div class="title">出生在错误星球 🌍</div>
+      <div class="desc">AI 实验短片 · 时间不存在</div>
+      <div class="arrow">在小红书观看 →</div>
+    </a>
+
+    <a class="card" href="https://www.xiaohongshu.com/discovery/item/6a355549000000001503cc81?source=webshare&xhsshare=pc_web&xsec_token=ABD3KZm0PELMNV_BeztOcfnkZmbKAsfIGUBjjWNiwgSrU=&xsec_source=pc_share" target="_blank" rel="noopener">
+      <div class="num">No. 02</div>
+      <div class="title">误入女巫魔法世界 🪄🧙</div>
+      <div class="desc">AI 实验短片 · 时间不存在</div>
+      <div class="arrow">在小红书观看 →</div>
+    </a>
+
+    <a class="card" href="https://www.xiaohongshu.com/discovery/item/6a382e23000000001c026db0?source=webshare&xhsshare=pc_web&xsec_token=ABKn5LJV6PO2dEYre8ZiTlCgrEFT7mdSenJaJlQm4F5FU=&xsec_source=pc_share" target="_blank" rel="noopener">
+      <div class="num">No. 03</div>
+      <div class="title">有些记忆注定会醒来</div>
+      <div class="desc">AI 微电影 · 时间不存在</div>
+      <div class="arrow">在小红书观看 →</div>
+    </a>
+
+    <a class="card" href="https://www.xiaohongshu.com/discovery/item/6a50c201000000000f016e14?source=webshare&xhsshare=pc_web&xsec_token=ABc7RP80_rc91bOecSmKI8Kmpn3QyjoGLK3ZXHueDyjNA=&xsec_source=pc_share" target="_blank" rel="noopener">
+      <div class="num">No. 04</div>
+      <div class="title">如果善意会发光…</div>
+      <div class="desc">AI 实验短片 · 时间不存在</div>
+      <div class="arrow">在小红书观看 →</div>
+    </a>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Made with AI & love · <a href="https://www.xiaohongshu.com/user/profile/5c8a6f1e0000000016033e6a" target="_blank" rel="noopener">小红书 @时间不存在</a></p>
+  </div>
+
+</div>
+
+<script>
+// Generate twinkling stars
+(function() {
+  const container = document.getElementById('stars');
+  const count = 80;
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    const size = Math.random() * 2 + 1;
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    const dur = Math.random() * 4 + 2;
+    const delay = Math.random() * 5;
+    html += `<div class="star" style="
+      width:${size}px; height:${size}px;
+      left:${x}%; top:${y}%;
+      --dur:${dur}s; --delay:${delay}s;
+    "></div>`;
+  }
+  container.innerHTML = html;
+})();
+</script>
+
+</body>
+</html>
